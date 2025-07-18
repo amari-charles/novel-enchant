@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Button, Textarea, Card } from '../../shared/ui-components'
 
 interface PromptAttempt {
@@ -12,7 +12,6 @@ interface PromptAttempt {
 }
 
 interface PromptHistoryProps {
-  sceneId: string
   currentPrompt: string
   promptHistory: PromptAttempt[]
   onRetryWithPrompt: (prompt: string) => Promise<void>
@@ -21,7 +20,6 @@ interface PromptHistoryProps {
 }
 
 export function PromptHistory({
-  sceneId,
   currentPrompt,
   promptHistory,
   onRetryWithPrompt,

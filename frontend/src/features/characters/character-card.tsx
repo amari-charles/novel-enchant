@@ -1,8 +1,7 @@
-import React from 'react'
 import { Card, CardContent } from '../../shared/ui-components'
 import type { CharacterCardProps } from '../../shared/type-definitions'
 
-export function CharacterCard({ character, onClick, showSceneCount = false }: CharacterCardProps) {
+export function CharacterCard({ character, onClick }: CharacterCardProps) {
   const getRoleColor = (role?: string) => {
     switch (role) {
       case 'protagonist':
@@ -52,49 +51,16 @@ export function CharacterCard({ character, onClick, showSceneCount = false }: Ch
               )}
             </div>
 
-            {/* Aliases */}
-            {character.aliases.length > 0 && (
-              <p className="text-sm text-gray-600 mb-2">
-                Also known as: {character.aliases.join(', ')}
-              </p>
-            )}
-
             {/* Description */}
             <p className="text-sm text-gray-700 mb-3 line-clamp-3">
               {character.base_description}
             </p>
 
-            {/* Personality Traits */}
-            {character.personality_traits.length > 0 && (
-              <div className="mb-3">
-                <div className="flex flex-wrap gap-1">
-                  {character.personality_traits.slice(0, 3).map((trait, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
-                    >
-                      {trait}
-                    </span>
-                  ))}
-                  {character.personality_traits.length > 3 && (
-                    <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-full">
-                      +{character.personality_traits.length - 3} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Reference Images Count */}
+            {/* Character Status */}
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>
-                {character.reference_images.length} reference image{character.reference_images.length !== 1 ? 's' : ''}
+                {character.primary_reference_image ? 'Has reference image' : 'No reference image'}
               </span>
-              {showSceneCount && (
-                <span>
-                  Appears in X scenes
-                </span>
-              )}
             </div>
           </div>
         </div>

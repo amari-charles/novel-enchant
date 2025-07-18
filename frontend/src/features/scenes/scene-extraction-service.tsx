@@ -27,12 +27,11 @@ export function SceneExtractionService({
 }: SceneExtractionServiceProps) {
   const [extractionStatus, setExtractionStatus] = useState<'extracting' | 'preview' | 'processing'>('extracting')
   const [extractedScenes, setExtractedScenes] = useState<SceneExtractData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // const [isLoading, setIsLoading] = useState(false)
 
   // Mock scene extraction - in real app this would call AI service
   React.useEffect(() => {
     const extractScenes = async () => {
-      setIsLoading(true)
       
       // Simulate AI extraction delay
       await new Promise(resolve => setTimeout(resolve, 2000))
@@ -73,7 +72,6 @@ export function SceneExtractionService({
       
       setExtractedScenes(mockScenes)
       setExtractionStatus('preview')
-      setIsLoading(false)
     }
 
     extractScenes()
@@ -81,7 +79,6 @@ export function SceneExtractionService({
 
   const handleScenesConfirm = async (confirmedScenes: SceneExtractData[]) => {
     setExtractionStatus('processing')
-    setIsLoading(true)
 
     try {
       // Convert SceneExtractData to Scene objects
@@ -107,7 +104,6 @@ export function SceneExtractionService({
       onComplete(scenes)
     } catch (error) {
       console.error('Failed to process scenes:', error)
-      setIsLoading(false)
     }
   }
 
@@ -156,7 +152,7 @@ export function SceneExtractionService({
         extractedScenes={extractedScenes}
         onScenesConfirm={handleScenesConfirm}
         onCancel={onCancel}
-        isProcessing={isLoading}
+        isProcessing={false}
         chapterTitle={chapter.title}
       />
     )

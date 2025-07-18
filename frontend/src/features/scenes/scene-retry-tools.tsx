@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Button, Card } from '../../shared/ui-components'
 import { PromptHistory } from './prompt-history'
 import type { Scene, CharacterReferenceImage } from '../../shared/type-definitions'
@@ -315,7 +315,6 @@ export function SceneRetryTools({
 
       {/* Prompt History Component */}
       <PromptHistory
-        sceneId={scene.id}
         currentPrompt={currentPrompt}
         promptHistory={promptHistory}
         onRetryWithPrompt={handleRetryWithPrompt}

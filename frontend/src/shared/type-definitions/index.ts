@@ -14,9 +14,6 @@ export interface Story {
   cover_image_url?: string
   total_chapters: number
   total_scenes: number
-  completed_chapters: number
-  last_read_chapter?: number
-  reading_progress?: number // 0-100 percentage
   created_at: Timestamp
   updated_at: Timestamp
 }
@@ -54,12 +51,9 @@ export interface Character {
   id: UUID
   story_id: UUID
   name: string
-  aliases: string[]
   base_description: string
-  personality_traits: string[]
   role?: 'protagonist' | 'antagonist' | 'supporting' | 'minor'
   primary_reference_image?: CharacterReferenceImage
-  reference_images: CharacterReferenceImage[]
   is_active: boolean
 }
 
@@ -106,12 +100,25 @@ export interface SceneLocation {
 
 // Form types
 export interface CreateStoryForm {
+  // Primary input
+  content: string
+  source_url?: string
+  
+  // AI-deduced fields (editable)
   title: string
   description?: string
   genre?: string
   style_preset: Story['style_preset']
   cover_image_url?: string
+  
+  // Metadata
   is_public?: boolean
+  confidence_scores?: {
+    title: number
+    genre: number
+    style_preset: number
+    description: number
+  }
 }
 
 export interface UploadChapterForm {
@@ -180,6 +187,7 @@ export interface CharacterCardProps {
 export interface ChapterListItemProps {
   chapter: Chapter
   onView: () => void
+  onEdit?: () => void
   onDelete?: () => void
 }
 

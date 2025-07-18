@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Button, Card, Textarea } from '../../shared/ui-components'
 
 interface FeedbackData {
@@ -11,8 +11,6 @@ interface FeedbackData {
 }
 
 interface PromptFeedbackProps {
-  sceneId: string
-  imageId: string
   originalPrompt: string
   onSubmitFeedback: (feedback: FeedbackData) => Promise<void>
   onClose: () => void
@@ -51,8 +49,6 @@ const RATING_LABELS = {
 }
 
 export function PromptFeedback({
-  sceneId,
-  imageId,
   originalPrompt,
   onSubmitFeedback,
   onClose,

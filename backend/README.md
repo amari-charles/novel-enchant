@@ -40,16 +40,63 @@ The schema supports the complete story visualization pipeline:
 - **scenes** - AI-extracted visual moments (2-5 per chapter)
 
 ### Character & Location Tracking
-- **characters** - Persistent entities across the story
-- **character_reference_images** - IP-Adapter consistency images
-- **character_states** - Evolving descriptions by chapter
-- **locations** + **location_states** - Place tracking with temporal changes
+- **characters** - Persistent entities with multiple reference images
+- **character_reference_images** - Multiple references per entity with temporal tracking
+- **character_states** - Evolving descriptions by chapter with priority-based management
+- **locations** + **location_states** - Place tracking with temporal changes and reference evolution
 
 ### Image Generation Pipeline
-- **prompts** - Constructed prompts with metadata
+- **prompts** - Constructed prompts with metadata and modification history
 - **prompt_retries** - Alternative prompts for regeneration
-- **images** - Final SDXL outputs with quality metrics
-- **processing_jobs** - Async job queue management
+- **images** - Final SDXL outputs with version tracking and quality metrics
+- **processing_jobs** - Sequential chapter processing management
+
+### Enhanced Reference Image System
+
+**Entity Reference Management**:
+```sql
+-- Multiple reference images per entity
+CREATE TABLE entity_references (
+  id UUID PRIMARY KEY,
+  entity_id UUID REFERENCES entities(id),
+  image_url TEXT NOT NULL,
+  added_at_chapter INTEGER NOT NULL,
+  age_tag TEXT CHECK (age_tag IN ('young', 'adult', 'mature', 'elderly', 'child')),
+  style_preset TEXT NOT NULL,
+  description TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  priority INTEGER DEFAULT 5,
+  generation_method TEXT CHECK (generation_method IN ('ai_generated', 'user_uploaded', 'extracted')),
+  quality_score FLOAT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**Sequential Processing Management**:
+```sql
+-- Chapter processing sequence tracking
+CREATE TABLE chapter_processing_jobs (
+  id UUID PRIMARY KEY,
+  story_id UUID REFERENCES stories(id),
+  chapter_number INTEGER NOT NULL,
+  status TEXT CHECK (status IN ('queued', 'processing', 'completed', 'failed', 'waiting_for_previous')),
+  prerequisite_chapter INTEGER,
+  priority INTEGER DEFAULT 5,
+  created_at TIMESTAMP DEFAULT NOW(),
+  started_at TIMESTAMP,
+  completed_at TIMESTAMP,
+  error_message TEXT
+);
+```
+
+**Image Version Tracking**:
+```sql
+-- Scene images with version replacement
+ALTER TABLE scene_images 
+ADD COLUMN version INTEGER DEFAULT 1,
+ADD COLUMN replaced_image_id UUID REFERENCES scene_images(id),
+ADD COLUMN replaced_at TIMESTAMP;
+```
 
 ### Junction Tables
 - **scene_characters** - Many-to-many scene ↔ character relationships
@@ -58,19 +105,24 @@ The schema supports the complete story visualization pipeline:
 ## 🔧 Edge Functions
 
 ### 1. upload-chapter
-Accepts chapter content and initiates processing pipeline.
+Accepts chapter content and initiates processing pipeline with intelligent content detection.
 
 ```typescript
 POST /functions/v1/upload-chapter
 {
   "story_id": "uuid",
-  "chapter_number": 1,
-  "title": "Chapter Title",
-  "content": "Chapter text content..."
+  "file": File, // TXT, PDF, DOCX, EPUB supported
+  "title": "Optional title override"
 }
 ```
 
-**Response**: Chapter record + processing job for scene extraction
+**Content-Based Detection**:
+- **Automatic chapter detection** using pattern recognition (Chapter 1, Chapter One, Ch. 1, etc.)
+- **Content type classification**: single_chapter, multi_chapter, full_book
+- **Structural analysis**: word count, formatting patterns, section breaks
+- **Confidence scoring** based on detected patterns and indicators
+
+**Response**: Parsed text + chapter structure + processing sequence initialization
 
 ### 2. extract-scenes
 Uses GPT-4 to identify 2-5 key visual scenes per chapter.
@@ -143,6 +195,60 @@ POST /functions/v1/get-reading-view
 ```
 
 **Response**: Chapter + scenes + characters + locations + images + navigation
+
+## 🔄 Sequential Chapter Processing
+
+Novel Enchant processes chapters sequentially to maintain visual and narrative consistency across the story.
+
+### **Processing Order Requirements**
+
+- **Chapters MUST be processed in sequential order** (Chapter 1 → Chapter 2 → Chapter 3...)
+- **Each chapter waits for the previous chapter to complete** before starting
+- **Chapter context is preserved** and passed to subsequent chapters
+
+### **Why Sequential Processing?**
+
+1. **Visual Consistency**: Later chapters build on visual elements established in earlier chapters
+2. **Entity Evolution**: Characters age, change appearance, gain scars, etc. over time
+3. **Reference Image Management**: New reference images are created based on entity evolution
+4. **Style Continuity**: Visual style evolves consistently throughout the story
+
+### **Processing Pipeline per Chapter**
+
+```typescript
+// Sequential processing workflow
+async function processChapter(chapterNumber: number, previousContext?: ChapterContext) {
+  1. Load chapter text and previous chapter context
+  2. Extract visual scenes with story context
+  3. Identify and resolve entity mentions
+  4. Track entity evolution from previous chapters
+  5. Generate/update reference images as needed
+  6. Construct image prompts with multiple references
+  7. Generate scene images with version replacement
+  8. Assess image quality and suggest improvements
+  9. Pass context to next chapter
+}
+```
+
+### **Chapter Context Passing**
+
+Each chapter receives context from the previous chapter:
+
+```typescript
+interface ChapterContext {
+  chapterNumber: number;
+  entityStates: Record<string, EntityReference[]>; // Latest references per entity
+  previousScenes: Scene[];                         // Previous chapter scenes
+  styleEvolution: string[];                        // Style progression
+}
+```
+
+### **Reference Image Evolution**
+
+- **Multiple references per entity** with temporal tracking
+- **Age-based progression** (young → adult → elderly)
+- **Priority-based selection** for prompt construction
+- **Quality-driven replacement** when better references are generated
 
 ## 🧠 AI Integration
 

@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Button, Input, Textarea } from '../../shared/ui-components'
-import type { Scene, Character, Location } from '../../shared/type-definitions'
 
 interface SceneExtractData {
   title: string

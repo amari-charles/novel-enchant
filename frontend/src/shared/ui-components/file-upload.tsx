@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react'
-import { Button } from './button'
 
 interface FileUploadProps {
   accept?: string

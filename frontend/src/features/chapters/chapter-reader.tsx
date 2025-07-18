@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Button, Card, CardContent } from '../../shared/ui-components'
+import { useState, useEffect, useRef } from 'react'
+import { Button, DarkModeToggle } from '../../shared/ui-components'
+import { useTheme } from '../../contexts/theme-context'
 import { SceneImage } from '../scenes/scene-image'
-import type { ChapterWithScenes, Scene, Image } from '../../shared/type-definitions'
+import type { ChapterWithScenes, Scene } from '../../shared/type-definitions'
 
 interface ChapterReaderProps {
   chapterId: string
@@ -68,11 +69,8 @@ Elara reached out with trembling fingers. The moment her skin made contact with 
             id: 'char1',
             story_id: '1',
             name: 'Elara',
-            aliases: [],
             base_description: 'A young woman seeking her family\'s stolen grimoire',
-            personality_traits: ['determined', 'cautious', 'intelligent'],
             role: 'protagonist',
-            reference_images: [],
             is_active: true
           },
           importance: 'main',
@@ -122,11 +120,8 @@ Elara reached out with trembling fingers. The moment her skin made contact with 
             id: 'char1',
             story_id: '1',
             name: 'Elara',
-            aliases: [],
             base_description: 'A young woman seeking her family\'s stolen grimoire',
-            personality_traits: ['determined', 'cautious', 'intelligent'],
             role: 'protagonist',
-            reference_images: [],
             is_active: true
           },
           importance: 'main',
@@ -137,11 +132,8 @@ Elara reached out with trembling fingers. The moment her skin made contact with 
             id: 'char2',
             story_id: '1',
             name: 'The Keeper',
-            aliases: ['The Old Mage'],
             base_description: 'An elderly mage who guards the Repository of the Arcane',
-            personality_traits: ['wise', 'mysterious', 'protective'],
             role: 'supporting',
-            reference_images: [],
             is_active: true
           },
           importance: 'main',
@@ -180,11 +172,8 @@ Elara reached out with trembling fingers. The moment her skin made contact with 
             id: 'char1',
             story_id: '1',
             name: 'Elara',
-            aliases: [],
             base_description: 'A young woman seeking her family\'s stolen grimoire',
-            personality_traits: ['determined', 'cautious', 'intelligent'],
             role: 'protagonist',
-            reference_images: [],
             is_active: true
           },
           importance: 'main',
@@ -213,14 +202,13 @@ interface ReaderSettings {
   fontSize: number
   lineHeight: number
   fontFamily: 'serif' | 'sans-serif' | 'mono'
-  darkMode: boolean
   showProgress: boolean
 }
 
 export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: ChapterReaderProps) {
+  useTheme() // Hook for dark mode context
   const [chapter, setChapter] = useState<ChapterWithScenes | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [showCharacterModal, setShowCharacterModal] = useState(false)
+  // const [isLoading, setIsLoading] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [readingProgress, setReadingProgress] = useState(0)
   const [estimatedTimeLeft, setEstimatedTimeLeft] = useState(0)
@@ -230,17 +218,13 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
     fontSize: 18,
     lineHeight: 1.6,
     fontFamily: 'serif',
-    darkMode: false,
     showProgress: true
   })
 
   useEffect(() => {
     const loadChapter = async () => {
-      setIsLoading(true)
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
       setChapter(mockChapterWithScenes)
-      setIsLoading(false)
     }
     
     loadChapter()
@@ -367,22 +351,11 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
     return sections
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading chapter...</p>
-        </div>
-      </div>
-    )
-  }
-
   if (!chapter) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Chapter not found</p>
+          <p className="text-muted-foreground">Chapter not found</p>
         </div>
       </div>
     )
@@ -397,15 +370,13 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
   }[settings.fontFamily]
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${
-      settings.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'
-    }`}>
+    <div className="min-h-screen bg-background text-foreground">
       {/* Reading Progress Bar */}
       {settings.showProgress && (
         <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-1 bg-gray-200 dark:bg-gray-700">
+          <div className="h-1 bg-muted">
             <div 
-              className="h-full bg-blue-600 transition-all duration-150 ease-out"
+              className="h-full bg-primary transition-all duration-150 ease-out"
               style={{ width: `${readingProgress}%` }}
             />
           </div>
@@ -413,24 +384,18 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
       )}
 
       {/* Fixed Reader Controls */}
-      <div className={`fixed top-4 right-4 z-40 flex items-center space-x-2 ${
-        settings.darkMode ? 'text-gray-100' : 'text-gray-900'
-      }`}>
+      <div className="fixed top-4 right-4 z-40 flex items-center space-x-2 text-foreground">
         {settings.showProgress && estimatedTimeLeft > 0 && (
-          <div className={`px-3 py-1 rounded-full text-sm ${
-            settings.darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'
-          }`}>
+          <div className="px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground">
             {estimatedTimeLeft} min left
           </div>
         )}
         
+        <DarkModeToggle size="sm" />
+        
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className={`p-2 rounded-full transition-colors ${
-            settings.darkMode 
-              ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-          }`}
+          className="p-2 rounded-full transition-colors bg-muted hover:bg-secondary text-muted-foreground hover:text-secondary-foreground"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -442,11 +407,7 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
       {/* Reader Settings Panel */}
       {showSettings && (
         <div className="fixed top-16 right-4 z-50 w-80">
-          <div className={`p-6 rounded-lg shadow-xl border ${
-            settings.darkMode 
-              ? 'bg-gray-800 border-gray-700 text-gray-100' 
-              : 'bg-white border-gray-200 text-gray-900'
-          }`}>
+          <div className="p-6 rounded-lg shadow-xl border bg-card text-card-foreground">
             <h3 className="text-lg font-medium mb-4">Reading Settings</h3>
             
             <div className="space-y-4">
@@ -456,18 +417,14 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={() => updateSetting('fontSize', Math.max(12, settings.fontSize - 2))}
-                    className={`p-1 rounded ${
-                      settings.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                    }`}
+                    className="p-1 rounded hover:bg-muted transition-colors"
                   >
                     A-
                   </button>
                   <span className="text-sm w-12 text-center">{settings.fontSize}px</span>
                   <button
                     onClick={() => updateSetting('fontSize', Math.min(24, settings.fontSize + 2))}
-                    className={`p-1 rounded ${
-                      settings.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                    }`}
+                    className="p-1 rounded hover:bg-muted transition-colors"
                   >
                     A+
                   </button>
@@ -499,12 +456,8 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
                       onClick={() => updateSetting('fontFamily', font)}
                       className={`p-2 text-sm rounded border transition-colors ${
                         settings.fontFamily === font
-                          ? settings.darkMode
-                            ? 'border-blue-400 bg-blue-900/20 text-blue-300'
-                            : 'border-blue-500 bg-blue-50 text-blue-700'
-                          : settings.darkMode
-                            ? 'border-gray-600 hover:border-gray-500'
-                            : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-muted-foreground'
                       }`}
                     >
                       {font === 'serif' ? 'Serif' : font === 'sans-serif' ? 'Sans' : 'Mono'}
@@ -513,28 +466,13 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
                 </div>
               </div>
               
-              {/* Dark Mode */}
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Dark Mode</label>
-                <button
-                  onClick={() => updateSetting('darkMode', !settings.darkMode)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.darkMode ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    settings.darkMode ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
-              </div>
-              
               {/* Show Progress */}
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">Show Progress</label>
                 <button
                   onClick={() => updateSetting('showProgress', !settings.showProgress)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.showProgress ? 'bg-blue-600' : 'bg-gray-200'
+                    settings.showProgress ? 'bg-primary' : 'bg-muted'
                   }`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
@@ -552,9 +490,7 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
         <div className="flex items-center justify-between mb-8">
           <button 
             onClick={() => onBackToStory(chapter.story_id)} 
-            className={`flex items-center transition-colors ${
-              settings.darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className="flex items-center transition-colors text-muted-foreground hover:text-foreground"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -567,13 +503,10 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
               variant="outline" 
               size="sm" 
               onClick={() => onCharactersClick(chapter.story_id)}
-              className={settings.darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : ''}
             >
               Character Roster
             </Button>
-            <div className={`text-sm ${
-              settings.darkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
+            <div className="text-sm text-muted-foreground">
               Chapter {chapter.chapter_number}
             </div>
           </div>
@@ -581,24 +514,7 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
 
         {/* Chapter Header */}
         <div className="mb-8">
-          <h1 className={`text-3xl font-bold mb-2 ${
-            settings.darkMode ? 'text-gray-100' : 'text-gray-900'
-          }`}>{chapter.title}</h1>
-          <div className={`flex items-center space-x-4 text-sm ${
-            settings.darkMode ? 'text-gray-400' : 'text-gray-500'
-          }`}>
-            <span>{chapter.word_count.toLocaleString()} words</span>
-            <span>•</span>
-            <span>{Math.ceil(chapter.word_count / 250)} min read</span>
-            <span>•</span>
-            <span>{chapter.scenes.length} scenes</span>
-            {settings.showProgress && (
-              <>
-                <span>•</span>
-                <span>{Math.round(readingProgress)}% complete</span>
-              </>
-            )}
-          </div>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">{chapter.title}</h1>
         </div>
 
         {/* Chapter Content with Inline Scenes */}
@@ -607,9 +523,7 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
             <div key={index}>
               {section.type === 'text' ? (
                 <div 
-                  className={`whitespace-pre-wrap leading-relaxed mb-6 ${
-                    settings.darkMode ? 'text-gray-200' : 'text-gray-800'
-                  }`}
+                  className="whitespace-pre-wrap leading-relaxed mb-6 text-foreground"
                   style={{
                     fontSize: `${settings.fontSize}px`,
                     lineHeight: settings.lineHeight
@@ -629,29 +543,20 @@ export function ChapterReader({ chapterId, onBackToStory, onCharactersClick }: C
         </div>
 
         {/* Chapter Navigation */}
-        <div className={`mt-12 pt-8 border-t ${
-          settings.darkMode ? 'border-gray-700' : 'border-gray-200'
-        }`}>
+        <div className="mt-12 pt-8 border-t border-border">
           <div className="flex justify-between items-center">
             <Button 
               variant="outline"
-              className={settings.darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : ''}
             >
               ← Previous Chapter
             </Button>
             
-            <div className={`text-center text-sm ${
-              settings.darkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
-              <div>Chapter {chapter.chapter_number} of {chapter.chapter_number + 5}</div>
-              <div className="mt-1">
-                Reading progress: {Math.round(readingProgress)}%
-              </div>
+            <div className="text-center text-sm text-muted-foreground">
+              <div>Chapter {chapter.chapter_number}</div>
             </div>
             
             <Button 
               variant="outline"
-              className={settings.darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : ''}
             >
               Next Chapter →
             </Button>

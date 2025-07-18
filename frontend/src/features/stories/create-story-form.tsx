@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Button, Input, Textarea, Select } from '../../shared/ui-components'
+import { useState } from 'react'
+import { Button, Input, Textarea } from '../../shared/ui-components'
 import { ImageSelector } from '../../shared/ui-components/image-selector'
 import { StylePreview } from '../../shared/ui-components/style-preview'
 import type { CreateStoryForm } from '../../shared/type-definitions'
@@ -10,17 +10,10 @@ interface CreateStoryFormProps {
   isLoading?: boolean
 }
 
-const stylePresetOptions = [
-  { value: 'fantasy', label: 'Fantasy' },
-  { value: 'scifi', label: 'Science Fiction' },
-  { value: 'romance', label: 'Romance' },
-  { value: 'thriller', label: 'Thriller' },
-  { value: 'historical', label: 'Historical' },
-  { value: 'contemporary', label: 'Contemporary' }
-]
 
 export function CreateStoryForm({ onSubmit, onCancel, isLoading = false }: CreateStoryFormProps) {
   const [formData, setFormData] = useState<CreateStoryForm>({
+    content: '',
     title: '',
     description: '',
     genre: '',

@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "name": "novel-enchant-backend",
+  "description": "Backend functions for Novel Enchant AI storytelling platform",
+  "exports": {
+    "./shared/types": "./shared/types.ts",
+    "./shared/utils": "./shared/utils.ts",
+    "./shared/constants": "./shared/constants.ts",
+    "./shared/errors": "./shared/errors.ts"
+  },
+  "tasks": {
+    "test": "deno test --allow-env --allow-net --allow-read --allow-write tests/test-runner.ts",
+    "test:unit": "deno test --allow-env --allow-net --allow-read --allow-write **/*.spec.ts",
+    "test:integration": "deno test --allow-env --allow-net --allow-read --allow-write tests/integration/**/*.spec.ts",
+    "test:watch": "deno test --allow-env --allow-net --allow-read --allow-write --watch **/*.spec.ts",
+    "lint": "deno lint",
+    "fmt": "deno fmt",
+    "type-check": "deno check **/*.ts"
+  },
+  "imports": {
+    "@std/testing": "https://deno.land/std@0.208.0/testing/",
+    "@std/assert": "https://deno.land/std@0.208.0/assert/",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"],
+      "exclude": ["no-unused-vars"]
+    },
+    "exclude": ["**/node_modules/**"]
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": true,
+    "proseWrap": "preserve"
+  },
+  "test": {
+    "include": ["**/*.spec.ts", "**/*.test.ts"],
+    "exclude": ["**/node_modules/**", "**/dist/**"]
+  }
+}

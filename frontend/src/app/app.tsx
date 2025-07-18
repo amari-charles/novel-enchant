@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import { ThemeProvider } from '../contexts/theme-context'
+import { ErrorBoundary } from '../components/error-boundary'
 import { StoryDashboard } from '../features/stories/story-dashboard'
-import { CreateStoryPage } from '../features/stories/create-story-page'
+import { SimpleUploadPage } from '../features/stories/simple-upload-page'
+import { StorySettingsPage } from '../features/stories/story-settings-page'
 import { StoryPage } from '../features/chapters/story-page'
 import { AddChapterPage } from '../features/chapters/add-chapter-page'
 import { ChapterReader } from '../features/chapters/chapter-reader'
 import { CharacterRoster } from '../features/characters/character-roster'
+import { CharacterDetailPage } from '../features/characters/character-detail-page'
+import { FlowTester } from '../features/testing/flow-tester'
 import type { CreateStoryForm, Story, UploadChapterForm, Chapter } from '../shared/type-definitions'
 
 // URL-based router that matches the vision's architecture
@@ -18,7 +22,7 @@ type Route =
   | { type: 'characters'; storyId: string }                 // /story/:storyId/characters
   | { type: 'character'; storyId: string; characterId: string } // /story/:storyId/characters/:characterId
   | { type: 'settings'; storyId: string }                   // /story/:storyId/settings
-  | { type: 'import' }                                       // /import
+  | { type: 'test-flows' }                                   // /test-flows
 
 const App = () => {
   const [currentRoute, setCurrentRoute] = useState<Route>({ type: 'home' })
@@ -33,6 +37,9 @@ const App = () => {
         break
       case 'create':
         path = '/create'
+        break
+      case 'test-flows':
+        path = '/test-flows'
         break
       case 'story':
         path = `/story/${route.storyId}`
@@ -51,9 +58,6 @@ const App = () => {
         break
       case 'settings':
         path = `/story/${route.storyId}/settings`
-        break
-      case 'import':
-        path = '/import'
         break
     }
     window.history.pushState({}, '', path)
@@ -81,7 +85,7 @@ const App = () => {
   const parsePathToRoute = (path: string): Route => {
     if (path === '/' || path === '') return { type: 'home' }
     if (path === '/create') return { type: 'create' }
-    if (path === '/import') return { type: 'import' }
+    if (path === '/test-flows') return { type: 'test-flows' }
     
     const storyMatch = path.match(/^\/story\/([^\/]+)$/)
     if (storyMatch) return { type: 'story', storyId: storyMatch[1] }
@@ -105,9 +109,16 @@ const App = () => {
     return { type: 'home' }
   }
 
+  // Get next chapter number for a story (mock implementation)
+  const getNextChapterNumber = (_storyId: string): number => {
+    // In a real app, this would query the API to get existing chapters
+    // For now, simulate by returning a reasonable mock value
+    // This could be enhanced to track chapters in local state
+    return 1 // Mock: always return 1 for now, would be calculated from existing chapters
+  }
+
   const handleCreateStory = async (data: CreateStoryForm): Promise<void> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // Mock API call - no delay needed
     
     const newStory: Story = {
       id: Date.now().toString(),
@@ -116,26 +127,36 @@ const App = () => {
       genre: data.genre,
       style_preset: data.style_preset,
       cover_image_url: data.cover_image_url,
-      total_chapters: 0,
+      total_chapters: data.content ? 1 : 0, // If content provided, assume first chapter
       total_scenes: 0,
-      completed_chapters: 0,
-      reading_progress: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
     
     console.log('Created story:', newStory)
+    console.log('Story content:', { 
+      content: data.content.substring(0, 100) + '...', 
+      confidence_scores: data.confidence_scores 
+    })
+    
+    // If content was provided, we could automatically create the first chapter here
+    // For now, just navigate to the story page
     navigate({ type: 'story', storyId: newStory.id })
   }
 
   const handleAddChapter = async (data: UploadChapterForm): Promise<void> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Mock API call - no delay needed
+    
+    // Get story ID from current route
+    const storyId = currentRoute.type === 'add-chapter' ? currentRoute.storyId : 'default-story-id'
+    
+    // Calculate next chapter number using our mock function
+    const nextChapterNumber = getNextChapterNumber(storyId)
     
     const newChapter: Chapter = {
       id: Date.now().toString(),
-      story_id: 'current-story-id', // TODO: Get from current route
-      chapter_number: 1, // TODO: Calculate actual chapter number
+      story_id: storyId,
+      chapter_number: nextChapterNumber,
       title: data.title,
       content: data.content,
       word_count: data.word_count || data.content.trim().split(/\s+/).length,
@@ -159,17 +180,21 @@ const App = () => {
           <StoryDashboard 
             onStoryClick={(storyId) => navigate({ type: 'story', storyId })}
             onCreateClick={() => navigate({ type: 'create' })}
+            onTestFlowsClick={() => navigate({ type: 'test-flows' })}
           />
         )
       
       case 'create':
         return (
-          <CreateStoryPage 
+          <SimpleUploadPage 
             onSubmit={handleCreateStory}
             onCancel={() => navigate({ type: 'home' })}
             isLoading={false}
           />
         )
+      
+      case 'test-flows':
+        return <FlowTester />
       
       case 'story':
         return (
@@ -190,7 +215,7 @@ const App = () => {
             onSubmit={handleAddChapter}
             onCancel={() => navigate({ type: 'story', storyId: currentRoute.storyId })}
             isLoading={false}
-            nextChapterNumber={1} // TODO: Get actual next chapter number
+            nextChapterNumber={getNextChapterNumber(currentRoute.storyId)}
           />
         )
       
@@ -214,30 +239,43 @@ const App = () => {
       
       case 'character':
         return (
-          <div>Character Detail Page - TODO</div>
+          <CharacterDetailPage 
+            storyId={currentRoute.storyId}
+            characterId={currentRoute.characterId}
+            onBackToRoster={() => navigate({ type: 'characters', storyId: currentRoute.storyId })}
+            onEditCharacter={(characterId) => console.log('Edit character:', characterId)}
+          />
         )
       
       case 'settings':
         return (
-          <div>Story Settings Page - TODO</div>
+          <StorySettingsPage 
+            storyId={currentRoute.storyId}
+            onBackToStory={() => navigate({ type: 'story', storyId: currentRoute.storyId })}
+            onStoryDeleted={() => navigate({ type: 'home' })}
+          />
         )
       
-      case 'import':
-        return (
-          <div>Import from URL Page - TODO</div>
-        )
       
       default:
-        return <StoryDashboard onStoryClick={(storyId) => navigate({ type: 'story', storyId })} onCreateClick={() => navigate({ type: 'create' })} />
+        return (
+          <StoryDashboard 
+            onStoryClick={(storyId) => navigate({ type: 'story', storyId })} 
+            onCreateClick={() => navigate({ type: 'create' })}
+            onTestFlowsClick={() => navigate({ type: 'test-flows' })}
+          />
+        )
     }
   }
 
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-        {renderCurrentRoute()}
-      </div>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <div className="min-h-screen bg-background text-foreground">
+          {renderCurrentRoute()}
+        </div>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
 

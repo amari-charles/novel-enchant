@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Card, CardContent, CardHeader } from '../../shared/ui-components'
-import type { Story, Chapter } from '../../shared/type-definitions'
+import type { Story } from '../../shared/type-definitions'
 
 interface StoryAnalytics {
   totalWords: number
@@ -57,16 +57,14 @@ const mockAnalytics: StoryAnalytics = {
 
 export function StoryAnalytics({ story, onClose, isModal = false }: StoryAnalyticsProps) {
   const [analytics, setAnalytics] = useState<StoryAnalytics | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'details'>('overview')
+  // const [isLoading, setIsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'overview' | 'generation' | 'details'>('overview')
 
   useEffect(() => {
     const loadAnalytics = async () => {
-      setIsLoading(true)
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
       setAnalytics(mockAnalytics)
-      setIsLoading(false)
     }
     
     loadAnalytics()
@@ -96,16 +94,6 @@ export function StoryAnalytics({ story, onClose, isModal = false }: StoryAnalyti
     return total > 0 ? Math.round((completed / total) * 100) : 0
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading analytics...</p>
-        </div>
-      </div>
-    )
-  }
 
   if (!analytics) {
     return (
@@ -121,7 +109,7 @@ export function StoryAnalytics({ story, onClose, isModal = false }: StoryAnalyti
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{story.title} - Analytics</h2>
-          <p className="text-gray-600">Track your story's progress and insights</p>
+          <p className="text-gray-600">Visual content generation insights</p>
         </div>
         {isModal && onClose && (
           <Button variant="ghost" onClick={onClose}>
@@ -137,7 +125,7 @@ export function StoryAnalytics({ story, onClose, isModal = false }: StoryAnalyti
         <nav className="-mb-px flex space-x-8">
           {[
             { key: 'overview', label: 'Overview' },
-            { key: 'progress', label: 'Progress' },
+            { key: 'generation', label: 'Generation' },
             { key: 'details', label: 'Details' }
           ].map(tab => (
             <button
@@ -263,7 +251,7 @@ export function StoryAnalytics({ story, onClose, isModal = false }: StoryAnalyti
         </div>
       )}
 
-      {activeTab === 'progress' && (
+      {activeTab === 'generation' && (
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -336,7 +324,7 @@ export function StoryAnalytics({ story, onClose, isModal = false }: StoryAnalyti
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-medium">Reading Statistics</h3>
+              <h3 className="text-lg font-medium">Content Statistics</h3>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -8,7 +8,7 @@ interface CardProps {
 }
 
 export function Card({ children, className = '', onClick, hover = false }: CardProps) {
-  const baseClasses = 'bg-white rounded-lg border border-gray-200 shadow-sm'
+  const baseClasses = 'bg-card text-card-foreground rounded-lg border border-border shadow-sm'
   const hoverClasses = hover ? 'hover:shadow-md transition-shadow cursor-pointer' : ''
   const clickableClasses = onClick ? 'hover:shadow-md transition-shadow cursor-pointer' : ''
   
@@ -26,13 +26,13 @@ export function Card({ children, className = '', onClick, hover = false }: CardP
 }
 
 export function CardHeader({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`px-6 py-4 border-b border-gray-200 ${className}`}>{children}</div>
+  return <div className={`px-6 py-4 border-b border-border text-card-foreground ${className}`}>{children}</div>
 }
 
 export function CardContent({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`px-6 py-4 ${className}`}>{children}</div>
+  return <div className={`px-6 py-4 text-card-foreground ${className}`}>{children}</div>
 }
 
 export function CardFooter({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`px-6 py-4 border-t border-gray-200 ${className}`}>{children}</div>
+  return <div className={`px-6 py-4 border-t border-border text-card-foreground ${className}`}>{children}</div>
 }
