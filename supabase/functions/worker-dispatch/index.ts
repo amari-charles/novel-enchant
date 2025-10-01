@@ -2,10 +2,11 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { Registry } from "../../../packages/registry.ts";
 
 const workerId = crypto.randomUUID();
+const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '') || 'http://127.0.0.1:54321';
 const handlers: Record<string, (p: any) => Promise<void>> = {
-  AnalyzeChapter: async ({ runId }) => fetch("http://127.0.0.1:54321/functions/v1/worker-analyze", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ runId }) }),
-  GenerateImage: async ({ sceneId, attempt }) => fetch("http://127.0.0.1:54321/functions/v1/worker-generate", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sceneId, attempt }) }),
-  FinalizeRun: async ({ runId }) => fetch("http://127.0.0.1:54321/functions/v1/worker-finalize", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ runId }) })
+  AnalyzeChapter: async ({ runId }) => fetch(`${baseUrl}/functions/v1/worker-analyze`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ runId }) }),
+  GenerateImage: async ({ sceneId, attempt }) => fetch(`${baseUrl}/functions/v1/worker-generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sceneId, attempt }) }),
+  FinalizeRun: async ({ runId }) => fetch(`${baseUrl}/functions/v1/worker-finalize`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ runId }) })
 };
 
 const corsHeaders = {
@@ -19,6 +20,7 @@ serve(async (req) => {
   }
 
   try {
+    // Worker dispatch is internal - no auth required
     const jobs = await Registry.queue().claimBatch({ batchSize: 5, leaseMs: 120_000, workerId, perRunConcurrency: 1 });
 
     for (const j of jobs) {
