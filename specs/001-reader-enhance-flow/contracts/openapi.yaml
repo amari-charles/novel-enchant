@@ -1,0 +1,417 @@
+openapi: 3.0.3
+info:
+  title: Reader Enhance API
+  description: API for the Reader Enhance flow - transforming text stories into illustrated experiences
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.novel-enchant.com/api
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /enhance/start:
+    post:
+      summary: Start enhancement job
+      description: Initiates a new enhancement job for text processing and image generation
+      operationId: startEnhancement
+      tags:
+        - Enhancement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - source
+              properties:
+                source:
+                  type: string
+                  enum: [paste, file, import]
+                  description: Source of the content
+                title:
+                  type: string
+                  maxLength: 255
+                  description: Optional title for the enhanced copy
+                text:
+                  type: string
+                  maxLength: 500000
+                  description: Text content (required if source is 'paste')
+                fileId:
+                  type: string
+                  description: Upload ID (required if source is 'file')
+              example:
+                source: paste
+                title: "My Story"
+                text: "Once upon a time in a distant land..."
+      responses:
+        '201':
+          description: Enhancement job created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - jobId
+                properties:
+                  jobId:
+                    type: string
+                    description: Unique identifier for the enhancement job
+                example:
+                  jobId: "job_clm1234567890"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: Content too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Content exceeds maximum size of 50,000 words"
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /enhance/status:
+    get:
+      summary: Get enhancement job status
+      description: Retrieves the current status and progress of an enhancement job
+      operationId: getEnhancementStatus
+      tags:
+        - Enhancement
+      parameters:
+        - name: jobId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The job ID to check status for
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - progress
+                properties:
+                  status:
+                    type: string
+                    enum: [queued, running, failed, completed]
+                    description: Current job status
+                  progress:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                    description: Progress percentage
+                  scenes:
+                    type: array
+                    description: Scene previews (available when status is running or completed)
+                    items:
+                      $ref: '#/components/schemas/ScenePreview'
+                  error:
+                    type: string
+                    description: Error message if status is failed
+                example:
+                  status: "running"
+                  progress: 65
+                  scenes:
+                    - id: "scene_001"
+                      excerpt: "The old wizard stood at the edge..."
+                      imageUrl: "https://cdn.example.com/images/scene_001.webp"
+                      status: "generated"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /enhance/accept:
+    post:
+      summary: Accept a generated image
+      description: Marks a specific image take as accepted for a scene
+      operationId: acceptImage
+      tags:
+        - Enhancement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - jobId
+                - sceneId
+                - takeId
+              properties:
+                jobId:
+                  type: string
+                  description: Enhancement job ID
+                sceneId:
+                  type: string
+                  description: Scene ID within the job
+                takeId:
+                  type: string
+                  description: Specific image take ID to accept
+              example:
+                jobId: "job_clm1234567890"
+                sceneId: "scene_001"
+                takeId: "take_001"
+      responses:
+        '200':
+          description: Image accepted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                example:
+                  success: true
+                  message: "Image accepted for scene"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Job, scene, or take not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /enhance/retry:
+    post:
+      summary: Retry image generation
+      description: Regenerates the image for a specific scene
+      operationId: retryImage
+      tags:
+        - Enhancement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - jobId
+                - sceneId
+              properties:
+                jobId:
+                  type: string
+                  description: Enhancement job ID
+                sceneId:
+                  type: string
+                  description: Scene ID to regenerate
+              example:
+                jobId: "job_clm1234567890"
+                sceneId: "scene_001"
+      responses:
+        '202':
+          description: Retry request accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  newTakeId:
+                    type: string
+                    description: ID of the new image being generated
+                example:
+                  success: true
+                  message: "Regenerating image for scene"
+                  newTakeId: "take_002"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Job or scene not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /shelf/save:
+    post:
+      summary: Save enhanced copy to shelf
+      description: Saves the completed enhancement job as an EnhancedCopy in user's shelf
+      operationId: saveToShelf
+      tags:
+        - Shelf
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - jobId
+              properties:
+                jobId:
+                  type: string
+                  description: Completed enhancement job ID
+                title:
+                  type: string
+                  maxLength: 255
+                  description: Optional title override for the saved copy
+              example:
+                jobId: "job_clm1234567890"
+                title: "My Enhanced Story"
+      responses:
+        '201':
+          description: Enhanced copy saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - copyId
+                properties:
+                  copyId:
+                    type: string
+                    description: ID of the saved enhanced copy
+                  redirectUrl:
+                    type: string
+                    description: URL to view the saved copy
+                example:
+                  copyId: "copy_abc123"
+                  redirectUrl: "/shelf/copy_abc123"
+        '400':
+          description: Bad request - job not completed or no accepted images
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Job must be completed with at least one accepted image"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code for client handling
+        details:
+          type: object
+          description: Additional error context
+
+    ScenePreview:
+      type: object
+      required:
+        - id
+        - excerpt
+        - status
+      properties:
+        id:
+          type: string
+          description: Scene identifier
+        excerpt:
+          type: string
+          description: Text excerpt from the scene
+        imageUrl:
+          type: string
+          format: uri
+          description: URL of the generated image (if available)
+        status:
+          type: string
+          enum: [pending, generating, generated, accepted, failed]
+          description: Current status of the scene
+        takes:
+          type: array
+          description: Multiple image attempts for this scene
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              url:
+                type: string
+                format: uri
+              accepted:
+                type: boolean
+              generatedAt:
+                type: string
+                format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid request parameters"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Authentication required"
+
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Rate limit exceeded. Please try again later"
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until rate limit resets
+
+tags:
+  - name: Enhancement
+    description: Operations for text enhancement and image generation
+  - name: Shelf
+    description: Operations for managing enhanced copies in user's shelf
