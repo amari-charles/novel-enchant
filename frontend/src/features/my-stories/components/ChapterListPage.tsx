@@ -182,10 +182,12 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
         updated_at: new Date().toISOString()
       };
 
-      // Save to database
+      // Save to database - exclude status field which doesn't exist in DB
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { status: _status, ...storyDataForDb } = updatedStory;
       const { error: updateError } = await supabase
         .from('enhanced_copies')
-        .update(updatedStory)
+        .update(storyDataForDb)
         .eq('id', story.id);
 
       if (updateError) {
@@ -252,10 +254,12 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
         updated_at: new Date().toISOString()
       };
 
-      // Save to database
+      // Save to database - exclude status field which doesn't exist in DB
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { status: _status2, ...storyDataForDb } = updatedStory;
       const { error: updateError } = await supabase
         .from('enhanced_copies')
-        .update(updatedStory)
+        .update(storyDataForDb)
         .eq('id', story.id);
 
       if (updateError) {
@@ -292,10 +296,12 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
         updated_at: new Date().toISOString()
       };
 
-      // Save to database
+      // Save to database - exclude status field which doesn't exist in DB
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { status: _status, ...storyDataForDb } = updatedStory;
       const { error: updateError } = await supabase
         .from('enhanced_copies')
-        .update(updatedStory)
+        .update(storyDataForDb)
         .eq('id', story.id);
 
       if (updateError) {
@@ -384,10 +390,12 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
             updated_at: new Date().toISOString()
           };
 
-          // Save to database
+          // Save to database - exclude status field which doesn't exist in DB
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { status: _status, ...storyDataForDb } = updatedStory;
           const { error: updateError } = await supabase
             .from('enhanced_copies')
-            .update(updatedStory)
+            .update(storyDataForDb)
             .eq('id', story.id);
 
           if (updateError) {

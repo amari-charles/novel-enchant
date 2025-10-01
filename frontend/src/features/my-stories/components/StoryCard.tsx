@@ -75,7 +75,13 @@ export const StoryCard: React.FC<StoryCardProps> = ({
     return (
       <div
         onClick={onEdit}
-        className="group bg-card rounded-lg border border-border hover:shadow-md transition-shadow p-6 cursor-pointer"
+        className="group p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        style={{
+          backgroundColor: 'var(--card)',
+          color: 'var(--card-foreground)',
+          border: '1px solid var(--border)',
+          borderRadius: '12px'
+        }}
       >
         <div className="flex items-center gap-4">
           {/* Story Info */}
@@ -116,8 +122,10 @@ export const StoryCard: React.FC<StoryCardProps> = ({
                 className="p-2 hover:bg-muted rounded-lg transition-colors"
                 aria-label="More options"
               >
-                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01" />
+                <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="5" r="1.5" />
+                  <circle cx="12" cy="12" r="1.5" />
+                  <circle cx="12" cy="19" r="1.5" />
                 </svg>
               </button>
 
@@ -130,7 +138,13 @@ export const StoryCard: React.FC<StoryCardProps> = ({
                       setShowDropdown(false);
                     }}
                   />
-                  <div className="absolute right-0 top-10 bg-card border border-border rounded-lg shadow-lg py-2 min-w-[120px] z-20">
+                  <div
+                    className="absolute right-0 top-10 rounded-lg shadow-lg py-2 min-w-[120px] z-20"
+                    style={{
+                      backgroundColor: 'var(--card)',
+                      border: '1px solid var(--border)'
+                    }}
+                  >
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
