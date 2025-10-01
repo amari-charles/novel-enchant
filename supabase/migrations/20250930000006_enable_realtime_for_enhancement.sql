@@ -20,18 +20,22 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA cron TO postgres;
 
 -- Schedule worker-dispatch to run every minute
 -- This uses pg_cron + pg_net to call the worker-dispatch edge function
+-- Note: Unschedule first if exists to avoid duplicates
+SELECT cron.unschedule('process-enhancement-jobs') WHERE EXISTS (
+  SELECT 1 FROM cron.job WHERE jobname = 'process-enhancement-jobs'
+);
+
 SELECT cron.schedule(
   'process-enhancement-jobs',
   '* * * * *', -- Every minute
   $$
   SELECT net.http_post(
-    url := current_setting('app.settings.api_url') || '/functions/v1/worker-dispatch',
-    headers := '{"Content-Type": "application/json"}'::jsonb,
+    url := current_setting('app.supabase_url', true) || '/functions/v1/worker-dispatch',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.service_role_key', true) || '"}'::jsonb,
     body := '{}'::jsonb
   ) AS request_id;
   $$
 );
 
--- For local development, set the API URL
--- In production, Supabase will use the correct public URL automatically
-ALTER DATABASE postgres SET app.settings.api_url TO 'http://127.0.0.1:54321';
+-- Set Supabase URL and service role key for cron job
+-- These are set via Supabase dashboard secrets or ALTER SYSTEM

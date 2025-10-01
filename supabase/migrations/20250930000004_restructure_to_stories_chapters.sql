@@ -1,16 +1,19 @@
 -- Restructure: Drop old temp chapters table, rename enhanced_copies to chapters
 
--- Step 1: Drop the old temp chapters table (not used by app)
-DROP TABLE IF EXISTS chapters CASCADE;
+-- Step 1 & 2: Rename enhanced_copies to chapters if not already done
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'enhanced_copies') THEN
+    DROP TABLE IF EXISTS chapters CASCADE;
+    ALTER TABLE enhanced_copies RENAME TO chapters;
+  END IF;
+END $$;
 
--- Step 2: Rename enhanced_copies to chapters
-ALTER TABLE enhanced_copies RENAME TO chapters;
+-- Step 3: Add story_id column to chapters if not exists
+ALTER TABLE chapters ADD COLUMN IF NOT EXISTS story_id uuid REFERENCES stories(id) ON DELETE CASCADE;
 
--- Step 2: Add story_id column to chapters
-ALTER TABLE chapters ADD COLUMN story_id uuid REFERENCES stories(id) ON DELETE CASCADE;
-
--- Step 3: Add content column to chapters (for raw chapter text)
-ALTER TABLE chapters ADD COLUMN content text;
+-- Step 4: Add content column to chapters (for raw chapter text)
+ALTER TABLE chapters ADD COLUMN IF NOT EXISTS content text;
 
 -- Step 4: Migrate existing data - create a story for each chapter and link them
 DO $$
@@ -48,10 +51,25 @@ DROP POLICY IF EXISTS "Users can insert own enhanced copies" ON chapters;
 DROP POLICY IF EXISTS "Users can update own enhanced copies" ON chapters;
 DROP POLICY IF EXISTS "Users can delete own enhanced copies" ON chapters;
 
-CREATE POLICY "Users can view own chapters" ON chapters FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own chapters" ON chapters FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own chapters" ON chapters FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete own chapters" ON chapters FOR DELETE USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view own chapters" ON chapters FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can insert own chapters" ON chapters FOR INSERT WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can update own chapters" ON chapters FOR UPDATE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can delete own chapters" ON chapters FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Step 8: Update indexes
 DROP INDEX IF EXISTS idx_enhanced_copies_user_id;

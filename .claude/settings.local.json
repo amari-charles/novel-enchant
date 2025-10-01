@@ -31,7 +31,8 @@
       "WebFetch(domain:www.geeksforgeeks.org)",
       "Bash(git restore:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(printf \"Y\\n\")"
     ],
     "deny": [],
     "ask": []
