@@ -30,12 +30,9 @@ SELECT cron.schedule(
   '* * * * *', -- Every minute
   $$
   SELECT net.http_post(
-    url := current_setting('app.supabase_url', true) || '/functions/v1/worker-dispatch',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.service_role_key', true) || '"}'::jsonb,
+    url := 'https://cquunkrscfpocntjekfq.supabase.co/functions/v1/worker-dispatch',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdXVua3JzY2Zwb2NudGpla2ZxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTExMjQ2NCwiZXhwIjoyMDc0Njg4NDY0fQ.hj8ZR0yHIDVtVFsSjxpq7dRr07TP8sD4a8vQ1S5quPA"}'::jsonb,
     body := '{}'::jsonb
   ) AS request_id;
   $$
 );
-
--- Set Supabase URL and service role key for cron job
--- These are set via Supabase dashboard secrets or ALTER SYSTEM
