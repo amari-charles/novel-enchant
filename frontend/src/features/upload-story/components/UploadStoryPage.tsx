@@ -1,11 +1,9 @@
 /**
  * Upload Story Page
- * Simplified flow: Upload content → Add metadata → Create story (no auto-enhancement)
+ * Simplified flow: Create story with metadata → Add chapters later in editor
  */
 
-import React, { useState, useCallback } from 'react';
-import { EnhanceUpload } from '@/features/file-upload/components/EnhanceUpload';
-import { FileUploadService } from '@/features/file-upload/services/file-upload.service';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
 
@@ -17,19 +15,17 @@ interface UploadStoryPageProps {
 interface StoryMetadata {
   title: string;
   description: string;
-  tags: string[];
+  author: string;
 }
 
-type Step = 'upload' | 'metadata' | 'success';
+type Step = 'create' | 'success';
 
 export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
   onNavigateToStories,
   onNavigate
 }) => {
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState<Step>('upload');
-  const [uploadedContent, setUploadedContent] = useState<string>('');
-  const [suggestedTitle, setSuggestedTitle] = useState<string>('');
+  const [currentStep, setCurrentStep] = useState<Step>('create');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdStoryId, setCreatedStoryId] = useState<string | null>(null);
@@ -38,94 +34,8 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
   const [metadata, setMetadata] = useState<StoryMetadata>({
     title: '',
     description: '',
-    tags: []
+    author: ''
   });
-
-  const handleTextSubmit = useCallback(async (text: string, title?: string) => {
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      // Validate text content
-      const validation = FileUploadService.validateText(text);
-      if (!validation.isValid) {
-        throw new Error(validation.error);
-      }
-
-      setUploadedContent(text);
-      setSuggestedTitle(title || FileUploadService.generateTitleFromText(text));
-      setCurrentStep('metadata');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to process text');
-    } finally {
-      setIsProcessing(false);
-    }
-  }, []);
-
-  const handleFileSubmit = useCallback(async (file: File, title?: string) => {
-    if (!user) {
-      setError('Please log in to upload files');
-      return;
-    }
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      // Upload and extract text from file
-      const { url } = await FileUploadService.uploadFile(file, user.id);
-      const extractedText = await FileUploadService.extractTextFromFile(url, file.name);
-
-      // Validate extracted text
-      const validation = FileUploadService.validateText(extractedText);
-      if (!validation.isValid) {
-        throw new Error(validation.error);
-      }
-
-      setUploadedContent(extractedText);
-      setSuggestedTitle(title || FileUploadService.generateTitleFromText(extractedText, 60));
-      setCurrentStep('metadata');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to process file');
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [user]);
-
-  const splitTextIntoChapters = (text: string): Array<{ title: string; content: string }> => {
-    // Simple chapter detection - look for "Chapter X:" patterns
-    const chapterPattern = /^(Chapter\s+\d+[:\-.]?.*?)$/gim;
-    const matches = [...text.matchAll(chapterPattern)];
-
-    if (matches.length === 0) {
-      // No chapter markers found, treat as single chapter
-      return [{
-        title: 'Chapter 1',
-        content: text.trim()
-      }];
-    }
-
-    const chapters: Array<{ title: string; content: string }> = [];
-
-    for (let i = 0; i < matches.length; i++) {
-      const match = matches[i];
-      const title = match[0].trim();
-
-      // Find content between this chapter and the next
-      const startIndex = match.index! + match[0].length;
-      const endIndex = matches[i + 1] ? matches[i + 1].index! : text.length;
-      const content = text.slice(startIndex, endIndex).trim();
-
-      if (content.length > 50) { // Only include substantial chapters
-        chapters.push({
-          title,
-          content
-        });
-      }
-    }
-
-    return chapters;
-  };
 
   const handleCreateStory = async () => {
     if (!user) {
@@ -142,39 +52,32 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
     setError(null);
 
     try {
-      // Split content into chapters
-      const chapters = splitTextIntoChapters(uploadedContent);
-
-      // Create the story record with basic metadata and draft status
+      // Create the story record with metadata stored in enhanced_content field
       const storyData = {
-        id: crypto.randomUUID(),
         user_id: user.id,
         title: metadata.title.trim(),
-        description: metadata.description.trim() || null,
-        tags: metadata.tags,
-        status: 'draft' as const,
-        chapters: chapters.map((chapter, index) => ({
-          id: crypto.randomUUID(),
-          title: chapter.title,
-          content: chapter.content,
-          order_index: index,
-          scenes: [], // No scenes initially - user will enhance later
-          enhanced: false
-        })),
+        enhanced_content: {
+          author: metadata.author.trim() || null,
+          description: metadata.description.trim() || null,
+          chapters: [] // Empty - user will add chapters in the editor
+        },
+        original_content: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      // Save to unified stories table (using enhanced_copies for now)
-      const { error: insertError } = await supabase
+      // Save to enhanced_copies table
+      const { data, error: insertError } = await supabase
         .from('enhanced_copies')
-        .insert([storyData]);
+        .insert([storyData])
+        .select()
+        .single();
 
       if (insertError) {
         throw new Error(`Failed to create story: ${insertError.message}`);
       }
 
-      setCreatedStoryId(storyData.id);
+      setCreatedStoryId(data.id);
       setCurrentStep('success');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to create story');
@@ -183,53 +86,12 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
     }
   };
 
-  const handleAddTag = (tag: string) => {
-    if (tag.trim() && !metadata.tags.includes(tag.trim())) {
-      setMetadata(prev => ({
-        ...prev,
-        tags: [...prev.tags, tag.trim()]
-      }));
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setMetadata(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
-  };
-
-  const renderUploadStep = () => (
+  const renderCreateStep = () => (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-4">Upload Your Story</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-4">Create New Story</h1>
         <p className="text-lg text-muted-foreground">
-          Get started by uploading your story content. You can enhance it with AI-generated images later.
-        </p>
-      </div>
-
-      <EnhanceUpload
-        onTextSubmit={handleTextSubmit}
-        onFileSubmit={handleFileSubmit}
-        isProcessing={isProcessing}
-        maxFileSizeMB={FileUploadService.getMaxFileSizeMB()}
-        supportedFormats={FileUploadService.getSupportedFormats()}
-      />
-
-      {error && (
-        <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderMetadataStep = () => (
-    <div className="max-w-2xl mx-auto px-6 py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-4">Story Details</h1>
-        <p className="text-lg text-muted-foreground">
-          Add some details about your story to help organize your library.
+          Add your story details. You'll add chapters and enhance them later.
         </p>
       </div>
 
@@ -244,20 +106,31 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
             type="text"
             value={metadata.title}
             onChange={(e) => setMetadata(prev => ({ ...prev, title: e.target.value }))}
-            placeholder={suggestedTitle || "Enter your story title"}
+            placeholder="Enter your story title"
             className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
             disabled={isProcessing}
+            maxLength={255}
           />
-          {suggestedTitle && (
-            <button
-              type="button"
-              onClick={() => setMetadata(prev => ({ ...prev, title: suggestedTitle }))}
-              className="mt-2 text-sm text-primary hover:underline"
-              disabled={isProcessing}
-            >
-              Use suggested title: "{suggestedTitle}"
-            </button>
-          )}
+          <p className="mt-1 text-sm text-muted-foreground">
+            {metadata.title.length}/255 characters
+          </p>
+        </div>
+
+        {/* Author */}
+        <div>
+          <label htmlFor="author" className="block text-sm font-medium text-foreground mb-2">
+            Author (optional)
+          </label>
+          <input
+            id="author"
+            type="text"
+            value={metadata.author}
+            onChange={(e) => setMetadata(prev => ({ ...prev, author: e.target.value }))}
+            placeholder="Author name"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
+            disabled={isProcessing}
+            maxLength={100}
+          />
         </div>
 
         {/* Description */}
@@ -269,48 +142,15 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
             id="description"
             value={metadata.description}
             onChange={(e) => setMetadata(prev => ({ ...prev, description: e.target.value }))}
-            placeholder="Brief description of your story..."
-            rows={3}
+            placeholder="Brief description or blurb..."
+            rows={4}
             className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
             disabled={isProcessing}
+            maxLength={2000}
           />
-        </div>
-
-        {/* Tags */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Tags (optional)
-          </label>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {metadata.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
-              >
-                {tag}
-                <button
-                  onClick={() => handleRemoveTag(tag)}
-                  className="ml-1 text-primary/60 hover:text-primary"
-                  disabled={isProcessing}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-          <input
-            type="text"
-            placeholder="Add tags (press Enter)"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddTag(e.currentTarget.value);
-                e.currentTarget.value = '';
-              }
-            }}
-            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
-            disabled={isProcessing}
-          />
+          <p className="mt-1 text-sm text-muted-foreground">
+            {metadata.description.length}/2000 characters
+          </p>
         </div>
       </div>
 
@@ -320,20 +160,26 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-8">
+      <div className="flex items-center justify-end gap-4 mt-8">
         <button
-          onClick={() => setCurrentStep('upload')}
-          className="btn-ghost"
+          onClick={() => {
+            if (onNavigateToStories) {
+              onNavigateToStories();
+            } else if (onNavigate) {
+              onNavigate({ type: 'stories' });
+            }
+          }}
+          className="px-4 py-2 border border-border text-foreground rounded-md hover:bg-secondary"
           disabled={isProcessing}
         >
-          ← Back to Upload
+          Cancel
         </button>
         <button
           onClick={handleCreateStory}
           disabled={isProcessing || !metadata.title.trim()}
-          className="btn-primary"
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
-          {isProcessing ? 'Creating Story...' : 'Create Story'}
+          {isProcessing ? 'Creating...' : 'Create Story'}
         </button>
       </div>
     </div>
@@ -349,7 +195,7 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
         </div>
         <h1 className="text-3xl font-bold text-foreground mb-4">Story Created!</h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Your story has been uploaded successfully. You can now edit chapters and enhance them with AI-generated images.
+          Your story has been created successfully. You can now add chapters and enhance them with AI-generated images.
         </p>
       </div>
 
@@ -360,9 +206,9 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
               onNavigate({ type: 'story-editor', storyId: createdStoryId });
             }
           }}
-          className="btn-primary"
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
         >
-          Edit Story
+          Add Chapters
         </button>
         <button
           onClick={() => {
@@ -372,22 +218,20 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
               onNavigate({ type: 'stories' });
             }
           }}
-          className="btn-ghost"
+          className="px-4 py-2 border border-border text-foreground rounded-md hover:bg-secondary"
         >
           View My Stories
         </button>
         <button
           onClick={() => {
-            setCurrentStep('upload');
-            setUploadedContent('');
-            setSuggestedTitle('');
-            setMetadata({ title: '', description: '', tags: [] });
+            setCurrentStep('create');
+            setMetadata({ title: '', description: '', author: '' });
             setError(null);
             setCreatedStoryId(null);
           }}
-          className="btn-ghost"
+          className="px-4 py-2 border border-border text-foreground rounded-md hover:bg-secondary"
         >
-          Upload Another Story
+          Create Another Story
         </button>
       </div>
     </div>
@@ -395,8 +239,7 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
 
   return (
     <div className="min-h-screen bg-background">
-      {currentStep === 'upload' && renderUploadStep()}
-      {currentStep === 'metadata' && renderMetadataStep()}
+      {currentStep === 'create' && renderCreateStep()}
       {currentStep === 'success' && renderSuccessStep()}
     </div>
   );

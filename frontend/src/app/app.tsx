@@ -12,7 +12,7 @@ import { NavBar } from '../components/NavBar'
 type Route =
   | { type: 'upload' }    // / (Upload Story)
   | { type: 'stories' }   // /stories
-  | { type: 'story-editor'; storyId: string }   // /stories/:id/edit
+  | { type: 'story-editor'; storyId: string; chapterId?: string }   // /stories/:id/edit/:chapterId?
   | { type: 'story-reading'; storyId: string; chapterIndex?: number }   // /stories/:id/read/:chapter?
   | { type: 'explore' } // /explore
 
@@ -32,6 +32,9 @@ const AuthenticatedApp = () => {
         break
       case 'story-editor':
         path = `/stories/${route.storyId}/edit`
+        if (route.chapterId) {
+          path += `/${route.chapterId}`
+        }
         break
       case 'story-reading':
         path = `/stories/${route.storyId}/read`
@@ -70,9 +73,13 @@ const AuthenticatedApp = () => {
     if (path === '/explore') return { type: 'explore' }
 
     // Handle story sub-routes
-    const storyEditorMatch = path.match(/^\/stories\/([^/]+)\/edit$/)
+    const storyEditorMatch = path.match(/^\/stories\/([^/]+)\/edit(?:\/([^/]+))?$/)
     if (storyEditorMatch) {
-      return { type: 'story-editor', storyId: storyEditorMatch[1] }
+      return {
+        type: 'story-editor',
+        storyId: storyEditorMatch[1],
+        chapterId: storyEditorMatch[2]
+      }
     }
 
     const storyReadingMatch = path.match(/^\/stories\/([^/]+)\/read(?:\/(\d+))?$/)

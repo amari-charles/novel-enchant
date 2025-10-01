@@ -27,7 +27,11 @@
       "Bash(curl -X POST http://127.0.0.1:54321/functions/v1/enhance-start -H \"Content-Type: application/json\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0cHNla2J5cWJ3cXd3Z3E2bGhpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMTQ5OTA4MSwiZXhwIjoyMDQ3MDc1MDgxfQ.Zb8-_J2QGdNvdWGa8Tgns1g-kKs2w3qrNZfv4Lq8HZU\" -d '{\"\"chapterId\"\": \"\"test-chapter-123\"\", \"\"stylePreset\"\": \"\"cinematic\"\", \"\"capScenes\"\": 3}')",
       "Bash(curl -X POST http://127.0.0.1:54321/functions/v1/enhance-start -H \"Content-Type: application/json\" -H \"Authorization: Bearer sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz\" -d '{\"\"chapterId\"\": \"\"test-chapter-123\"\", \"\"stylePreset\"\": \"\"cinematic\"\", \"\"capScenes\"\": 3}')",
       "Bash(curl:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:www.geeksforgeeks.org)",
+      "Bash(git restore:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,20 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
-// Check if Supabase credentials are available
-const hasSupabaseCredentials = () => {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  return url && key && url !== 'your-supabase-project-url' && key !== 'your-supabase-anon-key';
-};
-
-// Mock user type for when Supabase isn't available
-interface MockUser {
+interface User {
   id: string;
   email: string;
 }
 
 interface AuthContextType {
-  user: MockUser | null;
+  user: User | null;
   isLoading: boolean;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -32,139 +25,89 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<MockUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if we're in development/test mode
-    const isDevelopment = import.meta.env.VITE_APP_ENV === 'development';
+    const initAuth = async () => {
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUser = session?.user;
 
-    if (isDevelopment) {
-      // In development, use a mock user without requiring Supabase authentication
-      console.log('Development mode: Using mock authenticated user');
+      if (supabaseUser) {
+        setUser({ id: supabaseUser.id, email: supabaseUser.email! });
+        setIsLoading(false);
+      } else {
+        // Auto-login with test credentials in development
+        const isDevelopment = import.meta.env.VITE_APP_ENV === 'development';
+        const testEmail = import.meta.env.VITE_TEST_USER_EMAIL;
+        const testPassword = import.meta.env.VITE_TEST_USER_PASSWORD;
 
-      // Use a consistent dev user ID that matches our RLS policies
-      const devUser: MockUser = {
-        id: '00000000-0000-0000-0000-000000000123',
-        email: 'dev@test.com'
-      };
+        if (isDevelopment && testEmail && testPassword) {
+          console.log('Development mode: Auto-logging in with test user');
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: testEmail,
+            password: testPassword
+          });
 
-      setUser(devUser);
-      console.log('Mock user set for development:', devUser.email);
-      setIsLoading(false);
-
-    } else if (hasSupabaseCredentials()) {
-      // Use real Supabase auth in production
-      const initSupabaseAuth = async () => {
-        const { supabase } = await import('../lib/supabase');
-        const { data: { session } } = await supabase.auth.getSession();
-        const supabaseUser = session?.user;
-        if (supabaseUser) {
-          setUser({ id: supabaseUser.id, email: supabaseUser.email! });
+          if (error) {
+            console.error('Failed to auto-login test user:', error);
+          } else if (data.user) {
+            setUser({ id: data.user.id, email: data.user.email! });
+            console.log('Auto-logged in as test user:', data.user.email);
+          }
         }
         setIsLoading(false);
+      }
 
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (_event, session) => {
-            const supabaseUser = session?.user;
-            if (supabaseUser) {
-              setUser({ id: supabaseUser.id, email: supabaseUser.email! });
-            } else {
-              setUser(null);
-            }
-            setIsLoading(false);
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          const supabaseUser = session?.user;
+          if (supabaseUser) {
+            setUser({ id: supabaseUser.id, email: supabaseUser.email! });
+          } else {
+            setUser(null);
           }
-        );
+          setIsLoading(false);
+        }
+      );
 
-        return () => subscription.unsubscribe();
-      };
+      return () => subscription.unsubscribe();
+    };
 
-      initSupabaseAuth().catch((error) => {
-        console.error('Failed to initialize Supabase auth:', error);
-        setIsLoading(false);
-      });
-    } else {
-      // Fallback to mock auth if no credentials in production
-      console.log('Using mock authentication (Supabase credentials not configured)');
-      const devUser: MockUser = {
-        id: '00000000-0000-0000-0000-000000000123',
-        email: 'dev@test.com'
-      };
-      setUser(devUser);
-      console.log('Auto-logged in as dev user:', devUser.email);
+    initAuth().catch((error) => {
+      console.error('Failed to initialize auth:', error);
       setIsLoading(false);
-    }
+    });
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const isDevelopment = import.meta.env.VITE_APP_ENV === 'development';
-
-    if (isDevelopment) {
-      // In development, just use the dev user
-      const devUser: MockUser = { id: '00000000-0000-0000-0000-000000000123', email: 'dev@test.com' };
-      setUser(devUser);
-      return { error: null };
-    } else if (hasSupabaseCredentials()) {
-      try {
-        const { supabase } = await import('../lib/supabase');
-        const { error } = await supabase.auth.signUp({
-          email,
-          password
-        });
-        return { error };
-      } catch (error) {
-        return { error: error as Error };
-      }
-    } else {
-      // Mock signup - use consistent dev user
-      const devUser: MockUser = { id: '00000000-0000-0000-0000-000000000123', email: 'dev@test.com' };
-      setUser(devUser);
-      return { error: null };
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    const isDevelopment = import.meta.env.VITE_APP_ENV === 'development';
-
-    if (isDevelopment) {
-      // In development, just use the dev user
-      const devUser: MockUser = { id: '00000000-0000-0000-0000-000000000123', email: 'dev@test.com' };
-      setUser(devUser);
-      return { error: null };
-    } else if (hasSupabaseCredentials()) {
-      try {
-        const { supabase } = await import('../lib/supabase');
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        return { error };
-      } catch (error) {
-        return { error: error as Error };
-      }
-    } else {
-      // Mock signin - use consistent dev user
-      const devUser: MockUser = { id: '00000000-0000-0000-0000-000000000123', email: 'dev@test.com' };
-      setUser(devUser);
-      return { error: null };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
     }
   };
 
   const signOut = async () => {
-    const isDevelopment = import.meta.env.VITE_APP_ENV === 'development';
-
-    if (isDevelopment) {
-      // In development, don't actually sign out - keep test user
-      console.log('Development mode: Keeping test user logged in');
-      return;
-    } else if (hasSupabaseCredentials()) {
-      const { supabase } = await import('../lib/supabase');
-      await supabase.auth.signOut();
-    } else {
-      // Mock signout
-      setUser(null);
-    }
+    await supabase.auth.signOut();
   };
 
   return (
