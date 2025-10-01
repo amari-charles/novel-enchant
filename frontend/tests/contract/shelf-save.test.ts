@@ -68,7 +68,7 @@ describe('POST /api/shelf/save - Contract Test', () => {
       expect(data.redirectUrl).toMatch(/^\/shelf\//);
     });
 
-    it('should create enhanced_copy in database', async () => {
+    it('should create chapter in database', async () => {
       const request: SaveToShelfRequest = {
         jobId: 'job_completed_db_create_789',
         title: 'Database Test Story',
@@ -87,9 +87,9 @@ describe('POST /api/shelf/save - Contract Test', () => {
 
       const data: SaveToShelfResponse = await response.json();
 
-      // Verify enhanced copy was created by checking it exists
+      // Verify chapter was created by checking it exists
       const { data: copyData, error } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .select('*')
         .eq('id', data.copyId.replace('copy_', ''))
         .single();
@@ -119,9 +119,9 @@ describe('POST /api/shelf/save - Contract Test', () => {
 
       const data: SaveToShelfResponse = await response.json();
 
-      // Verify enhanced copy has cover image
+      // Verify chapter has cover image
       const { data: copyData } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .select('cover_image_url, chapters')
         .eq('id', data.copyId.replace('copy_', ''))
         .single();
@@ -365,9 +365,9 @@ describe('POST /api/shelf/save - Contract Test', () => {
 
       const data: SaveToShelfResponse = await response.json();
 
-      // Verify enhanced copy is private
+      // Verify chapter is private
       const { data: copyData } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .select('private')
         .eq('id', data.copyId.replace('copy_', ''))
         .single();
@@ -394,12 +394,12 @@ describe('POST /api/shelf/save - Contract Test', () => {
 
       const data: SaveToShelfResponse = await response.json();
 
-      // Verify enhanced copy belongs to authenticated user
+      // Verify chapter belongs to authenticated user
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
 
       const { data: copyData } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .select('user_id')
         .eq('id', data.copyId.replace('copy_', ''))
         .single();

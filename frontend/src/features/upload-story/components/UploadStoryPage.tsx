@@ -66,9 +66,9 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
         updated_at: new Date().toISOString()
       };
 
-      // Save to enhanced_copies table
+      // Save to chapters table
       const { data, error: insertError } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .insert([storyData])
         .select()
         .single();

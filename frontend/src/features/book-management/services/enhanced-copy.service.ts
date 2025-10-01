@@ -48,7 +48,7 @@ export class EnhancedCopyService {
     };
 
     const { data, error } = await supabase
-      .from('enhanced_copies')
+      .from('chapters')
       .insert(newCopy)
       .select()
       .single();
@@ -65,7 +65,7 @@ export class EnhancedCopyService {
    */
   static async getUserCopies(userId: string): Promise<EnhancedCopyListItem[]> {
     const { data, error } = await supabase
-      .from('enhanced_copies')
+      .from('chapters')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -106,7 +106,7 @@ export class EnhancedCopyService {
    */
   static async getCopyById(copyId: string, userId: string): Promise<EnhancedCopy | null> {
     const { data, error } = await supabase
-      .from('enhanced_copies')
+      .from('chapters')
       .select('*')
       .eq('id', copyId)
       .eq('user_id', userId) // Ensure user owns the copy
@@ -131,7 +131,7 @@ export class EnhancedCopyService {
     updates: Partial<Pick<EnhancedCopy, 'title' | 'chapters' | 'cover_image_url'>>
   ): Promise<EnhancedCopy> {
     const { data, error } = await supabase
-      .from('enhanced_copies')
+      .from('chapters')
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
@@ -153,7 +153,7 @@ export class EnhancedCopyService {
    */
   static async deleteCopy(copyId: string, userId: string): Promise<void> {
     const { error } = await supabase
-      .from('enhanced_copies')
+      .from('chapters')
       .delete()
       .eq('id', copyId)
       .eq('user_id', userId);
@@ -211,7 +211,7 @@ export class EnhancedCopyService {
     limit: number;
   }> {
     const { count, error } = await supabase
-      .from('enhanced_copies')
+      .from('chapters')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
@@ -237,7 +237,7 @@ export class EnhancedCopyService {
     query: string
   ): Promise<EnhancedCopyListItem[]> {
     const { data, error } = await supabase
-      .from('enhanced_copies')
+      .from('chapters')
       .select('id, title, cover_image_url, created_at, chapters')
       .eq('user_id', userId)
       .ilike('title', `%${query}%`)

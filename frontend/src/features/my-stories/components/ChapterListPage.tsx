@@ -77,7 +77,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
       }
 
       const { data: storyData, error: queryError } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .select('*')
         .eq('id', storyId)
         .eq('user_id', user.id)
@@ -186,7 +186,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { status: _status, ...storyDataForDb } = updatedStory;
       const { error: updateError } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .update(storyDataForDb)
         .eq('id', story.id);
 
@@ -265,7 +265,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { status: _status2, ...storyDataForDb } = updatedStory;
       const { error: updateError } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .update(storyDataForDb)
         .eq('id', story.id);
 
@@ -307,7 +307,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { status: _status, ...storyDataForDb } = updatedStory;
       const { error: updateError } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .update(storyDataForDb)
         .eq('id', story.id);
 
@@ -401,7 +401,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { status: _status, ...storyDataForDb } = updatedStory;
           const { error: updateError } = await supabase
-            .from('enhanced_copies')
+            .from('chapters')
             .update(storyDataForDb)
             .eq('id', story.id);
 

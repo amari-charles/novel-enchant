@@ -78,10 +78,9 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
         throw new Error('User not authenticated');
       }
 
-      // Load from both enhanced_copies (shelf) and works tables
-      // For now, we'll use enhanced_copies as the unified table
+      // Load from chapters table (formerly enhanced_copies)
       const { data: enhancedCopies, error: queryError } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
@@ -162,7 +161,7 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
 
     try {
       const { error } = await supabase
-        .from('enhanced_copies')
+        .from('chapters')
         .delete()
         .eq('id', storyId);
 
