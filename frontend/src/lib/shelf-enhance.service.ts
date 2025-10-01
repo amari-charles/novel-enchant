@@ -18,7 +18,7 @@ export class ShelfEnhanceService {
     chapterText: string,
     chapterTitle: string,
     storyTitle: string,
-    onProgress?: (sceneIndex: number, progress: { status: string; message: string; imageUrl?: string }) => void
+    onProgress?: (sceneIndex: number, totalScenes: number, progress: { status: string; message: string; imageUrl?: string }) => void
   ): Promise<ShelfEnhanceResult> {
     try {
       // Start enhancement with text directly (no temp chapters needed)
@@ -35,15 +35,16 @@ export class ShelfEnhanceService {
           runId,
           (status) => {
             // Report progress for each scene
+            const totalScenes = status.scenes.length;
             status.scenes.forEach((scene, index) => {
               if (scene.currentImage) {
-                onProgress?.(index, {
+                onProgress?.(index, totalScenes, {
                   status: 'completed',
                   message: `Scene ${index + 1} image generated successfully`,
                   imageUrl: scene.currentImage.url
                 });
               } else {
-                onProgress?.(index, {
+                onProgress?.(index, totalScenes, {
                   status: 'processing',
                   message: `Generating image for scene ${index + 1}...`
                 });

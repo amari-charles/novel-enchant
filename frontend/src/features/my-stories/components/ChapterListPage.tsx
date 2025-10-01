@@ -144,13 +144,13 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
         chapterText,
         chapter.title || `Chapter ${chapter.order_index + 1}`,
         story.title,
-        (sceneIndex) => {
-          // Update progress based on scene completion
+        (sceneIndex, totalScenes) => {
+          // Update progress based on actual scene completion
           const baseProgress = 30;
-          const sceneProgress = (sceneIndex / 5) * 60; // Assume ~5 scenes
+          const sceneProgress = totalScenes > 0 ? ((sceneIndex + 1) / totalScenes) * 60 : 0;
           setEnhancementProgress(prev => ({
             ...prev,
-            [chapter.id]: baseProgress + sceneProgress
+            [chapter.id]: Math.min(90, baseProgress + sceneProgress) // Cap at 90% until final save
           }));
         }
       );
