@@ -215,19 +215,26 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
 
     } catch (error) {
       console.error('Failed to enhance chapter:', error);
-      setError(`Failed to enhance chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
 
-      // Clean up progress on error
-      setEnhancingChapters(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(chapter.id);
-        return newSet;
-      });
-      setEnhancementProgress(prev => {
-        const newProgress = { ...prev };
-        delete newProgress[chapter.id];
-        return newProgress;
-      });
+      // Show error in progress bar, not as full-page error
+      setEnhancementProgress(prev => ({
+        ...prev,
+        [chapter.id]: -1 // Use -1 to indicate error state
+      }));
+
+      // Clean up after showing error for a bit
+      setTimeout(() => {
+        setEnhancingChapters(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(chapter.id);
+          return newSet;
+        });
+        setEnhancementProgress(prev => {
+          const newProgress = { ...prev };
+          delete newProgress[chapter.id];
+          return newProgress;
+        });
+      }, 3000); // Show error for 3 seconds
     }
   };
 

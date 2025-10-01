@@ -73,16 +73,34 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
 
           {isEnhancing ? (
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-primary font-medium">Enhancing...</span>
-                <span className="text-xs text-muted-foreground">{progress}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+              {progress === -1 ? (
+                // Error state
+                <>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-destructive font-medium">Enhancement failed</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-destructive h-2 rounded-full transition-all duration-300"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                </>
+              ) : (
+                // Normal progress state
+                <>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-primary font-medium">Enhancing...</span>
+                    <span className="text-xs text-muted-foreground">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

@@ -3,57 +3,12 @@
  * Coming Soon page that encourages users to publish their stories
  */
 
-import React, { useState } from 'react';
-import { useAuth } from '../../../contexts/auth-context';
-import { useEnhancementService } from '../../enhancement-engine/hooks/useEnhancementService';
+import React from 'react';
 
 export const ExplorePage: React.FC = () => {
-  const { user } = useAuth();
-  const enhancementService = useEnhancementService();
-  const [testResult, setTestResult] = useState<string>('');
-
-  const testService = async () => {
-    if (!enhancementService) {
-      setTestResult('Service not ready yet...');
-      return;
-    }
-
-    setTestResult('Testing service...');
-    try {
-      const result = await enhancementService.autoEnhance({
-        chapterId: 'test-chapter-123',
-        text: 'Once upon a time in a magical kingdom, a brave knight embarked on an epic quest.',
-        existingCharacters: [],
-        stylePreferences: { artStyle: 'fantasy', mood: 'heroic' }
-      });
-      setTestResult(`Service working! Created ${result.anchors.length} anchors using ${user ? 'SupabaseEnhancementService' : 'MockEnhancementService'}`);
-    } catch (error) {
-      setTestResult(`Error: ${error}`);
-    }
-  };
-
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
       <div className="max-w-2xl w-full text-center">
-
-        {/* Service Test Demo */}
-        <div className="mb-8 p-4 bg-muted rounded-lg">
-          <h3 className="font-semibold mb-2">Service Test Demo</h3>
-          <p className="text-sm text-muted-foreground mb-3">
-            Current user: {user ? `${user.email} (authenticated)` : 'Not authenticated'}
-          </p>
-          <button
-            onClick={testService}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 mb-2"
-          >
-            Test Enhancement Service
-          </button>
-          {testResult && (
-            <div className="mt-2 p-2 bg-background rounded text-sm">
-              {testResult}
-            </div>
-          )}
-        </div>
         {/* Icon */}
         <div className="mb-8 flex justify-center">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">

@@ -105,7 +105,7 @@ export class ShelfEnhanceService {
     return data.id;
   }
 
-  private static async createTempChapter(storyId: string, text: string): Promise<string> {
+  private static async createTempChapter(storyId: string, text: string, title: string): Promise<string> {
     const { data, error } = await supabase
       .from('chapters')
       .insert({
