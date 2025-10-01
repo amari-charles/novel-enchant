@@ -1,7 +1,7 @@
 /**
- * Story Editor Page
- * Main editor view with chapter list and individual chapter enhancement
- * Reuses ChapterEditor from my-works and adds enhancement functionality
+ * Chapter List Page
+ * Shows all chapters in a story with management capabilities
+ * Allows adding, editing, deleting, and enhancing chapters
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -43,7 +43,7 @@ interface Scene {
   order_index?: number;
 }
 
-interface StoryEditorPageProps {
+interface ChapterListPageProps {
   storyId: string;
   chapterId?: string;
   onBack: () => void;
@@ -52,7 +52,7 @@ interface StoryEditorPageProps {
 
 type View = 'chapter-list' | 'chapter-editor';
 
-export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
+export const ChapterListPage: React.FC<ChapterListPageProps> = ({
   storyId,
   chapterId,
   onBack,
@@ -488,4 +488,4 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
   );
 };
 
-export default StoryEditorPage;
+export default ChapterListPage;

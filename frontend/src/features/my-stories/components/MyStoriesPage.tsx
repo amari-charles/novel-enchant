@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '@/contexts/auth-context';
 import { StoryCard } from './StoryCard';
-import { StoryEditorPage } from './StoryEditorPage';
+import { ChapterListPage } from './ChapterListPage';
 import { ReadingView } from './ReadingView';
 
 // Story types from both old systems
@@ -202,7 +202,7 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
   // Render sub-views based on currentRoute
   if (currentRoute?.type === 'story-editor') {
     return (
-      <StoryEditorPage
+      <ChapterListPage
         storyId={currentRoute.storyId}
         chapterId={currentRoute.chapterId}
         onBack={handleBackToList}
