@@ -7,16 +7,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '@/contexts/auth-context';
-import { ChapterEditor } from '@/features/my-works/components/ChapterEditor';
+import { SimpleChapterEditor } from './SimpleChapterEditor';
 import { ShelfEnhanceService } from '@/lib/shelf-enhance.service';
+import { ChapterCard } from './ChapterCard';
 
 interface Story {
   id: string;
+  user_id: string;
   title: string;
-  description?: string | null;
-  chapters: Chapter[];
-  status: 'draft' | 'partial' | 'complete';
+  enhanced_content: {
+    author?: string | null;
+    description?: string | null;
+    chapters: Chapter[];
+  };
+  status?: 'draft' | 'partial' | 'complete';
   updated_at: string;
+  created_at: string;
 }
 
 interface Chapter {
@@ -39,14 +45,18 @@ interface Scene {
 
 interface StoryEditorPageProps {
   storyId: string;
+  chapterId?: string;
   onBack: () => void;
+  onNavigate?: (chapterId: string) => void;
 }
 
 type View = 'chapter-list' | 'chapter-editor';
 
 export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
   storyId,
-  onBack
+  chapterId,
+  onBack,
+  onNavigate
 }) => {
   const { user } = useAuth();
   const [story, setStory] = useState<Story | null>(null);
@@ -56,10 +66,6 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [enhancingChapters, setEnhancingChapters] = useState<Set<string>>(new Set());
   const [enhancementProgress, setEnhancementProgress] = useState<{ [chapterId: string]: number }>({});
-
-  useEffect(() => {
-    loadStory();
-  }, [storyId, loadStory]);
 
   const loadStory = useCallback(async () => {
     try {
@@ -85,7 +91,18 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
         throw new Error('Story not found');
       }
 
-      setStory(storyData as Story);
+      // Transform the data to match our interface
+      const transformedStory: Story = {
+        ...storyData,
+        enhanced_content: {
+          author: storyData.enhanced_content?.author || null,
+          description: storyData.enhanced_content?.description || null,
+          chapters: storyData.enhanced_content?.chapters || []
+        },
+        status: storyData.status || 'draft'
+      };
+
+      setStory(transformedStory);
     } catch (error) {
       console.error('Failed to load story:', error);
       setError(error instanceof Error ? error.message : 'Failed to load story');
@@ -93,6 +110,10 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
       setIsLoading(false);
     }
   }, [storyId, user]);
+
+  useEffect(() => {
+    loadStory();
+  }, [loadStory]);
 
   const handleEditChapter = (chapterId: string) => {
     setSelectedChapterId(chapterId);
@@ -141,7 +162,7 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
       setEnhancementProgress(prev => ({ ...prev, [chapter.id]: 95 }));
 
       // Update the chapter with enhanced scenes
-      const updatedChapters = story.chapters.map(ch => {
+      const updatedChapters = story.enhanced_content.chapters.map(ch => {
         if (ch.id === chapter.id) {
           return {
             ...ch,
@@ -154,17 +175,17 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
 
       const updatedStory = {
         ...story,
-        chapters: updatedChapters,
+        enhanced_content: {
+          ...story.enhanced_content,
+          chapters: updatedChapters
+        },
         updated_at: new Date().toISOString()
       };
 
       // Save to database
       const { error: updateError } = await supabase
         .from('enhanced_copies')
-        .update({
-          chapters: updatedChapters,
-          updated_at: updatedStory.updated_at
-        })
+        .update(updatedStory)
         .eq('id', story.id);
 
       if (updateError) {
@@ -214,27 +235,27 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
     try {
       const newChapter: Chapter = {
         id: crypto.randomUUID(),
-        title: `Chapter ${story.chapters.length + 1}`,
+        title: `Chapter ${story.enhanced_content.chapters.length + 1}`,
         content: '',
-        order_index: story.chapters.length,
+        order_index: story.enhanced_content.chapters.length,
         scenes: [],
         enhanced: false
       };
 
-      const updatedChapters = [...story.chapters, newChapter];
+      const updatedChapters = [...story.enhanced_content.chapters, newChapter];
       const updatedStory = {
         ...story,
-        chapters: updatedChapters,
+        enhanced_content: {
+          ...story.enhanced_content,
+          chapters: updatedChapters
+        },
         updated_at: new Date().toISOString()
       };
 
       // Save to database
       const { error: updateError } = await supabase
         .from('enhanced_copies')
-        .update({
-          chapters: updatedChapters,
-          updated_at: updatedStory.updated_at
-        })
+        .update(updatedStory)
         .eq('id', story.id);
 
       if (updateError) {
@@ -248,6 +269,43 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
     } catch (error) {
       console.error('Failed to add chapter:', error);
       setError(`Failed to add chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleDeleteChapter = async (chapterId: string) => {
+    if (!story) return;
+    if (!confirm('Are you sure you want to delete this chapter? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const updatedChapters = story.enhanced_content.chapters
+        .filter(ch => ch.id !== chapterId)
+        .map((ch, idx) => ({ ...ch, order_index: idx }));
+
+      const updatedStory = {
+        ...story,
+        enhanced_content: {
+          ...story.enhanced_content,
+          chapters: updatedChapters
+        },
+        updated_at: new Date().toISOString()
+      };
+
+      // Save to database
+      const { error: updateError } = await supabase
+        .from('enhanced_copies')
+        .update(updatedStory)
+        .eq('id', story.id);
+
+      if (updateError) {
+        throw new Error(`Failed to delete chapter: ${updateError.message}`);
+      }
+
+      setStory(updatedStory);
+    } catch (error) {
+      console.error('Failed to delete chapter:', error);
+      setError(`Failed to delete chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -292,13 +350,52 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
   }
 
   // Chapter Editor View
-  if (currentView === 'chapter-editor' && selectedChapterId) {
+  if (currentView === 'chapter-editor' && selectedChapterId && story) {
+    const selectedChapter = story.enhanced_content.chapters.find(ch => ch.id === selectedChapterId);
+
+    if (!selectedChapter) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-foreground mb-2">Chapter not found</h2>
+            <button onClick={handleBackToChapterList} className="btn-primary">
+              Back to Chapters
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <ChapterEditor
-        chapterId={selectedChapterId}
-        onSave={() => {
-          // The ChapterEditor handles saving internally
-          handleBackToChapterList();
+      <SimpleChapterEditor
+        chapter={selectedChapter}
+        onSave={async (updatedChapter) => {
+          // Update the chapter in the story
+          const updatedChapters = story.enhanced_content.chapters.map(ch =>
+            ch.id === updatedChapter.id ? updatedChapter : ch
+          );
+
+          const updatedStory = {
+            ...story,
+            enhanced_content: {
+              ...story.enhanced_content,
+              chapters: updatedChapters
+            },
+            updated_at: new Date().toISOString()
+          };
+
+          // Save to database
+          const { error: updateError } = await supabase
+            .from('enhanced_copies')
+            .update(updatedStory)
+            .eq('id', story.id);
+
+          if (updateError) {
+            throw new Error(`Failed to save chapter: ${updateError.message}`);
+          }
+
+          // Update local state
+          setStory(updatedStory);
         }}
         onBack={handleBackToChapterList}
       />
@@ -324,7 +421,7 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
             <div>
               <h1 className="text-2xl font-bold text-foreground">{story.title}</h1>
               <p className="text-muted-foreground">
-                {story.chapters.length} chapters • Last updated {new Date(story.updated_at).toLocaleDateString()}
+                {story.enhanced_content.chapters.length} chapters • Last updated {new Date(story.updated_at).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -349,91 +446,26 @@ export const StoryEditorPage: React.FC<StoryEditorPageProps> = ({
 
         {/* Chapters List */}
         <div className="space-y-4">
-          {story.chapters.map((chapter) => {
+          {story.enhanced_content.chapters.map((chapter) => {
             const stats = getChapterStats(chapter);
             const isEnhancing = enhancingChapters.has(chapter.id);
             const progress = enhancementProgress[chapter.id] || 0;
 
             return (
-              <div
+              <ChapterCard
                 key={chapter.id}
-                className="bg-card rounded-lg border border-border p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {chapter.title || `Chapter ${chapter.order_index + 1}`}
-                    </h3>
-
-                    {isEnhancing ? (
-                      <div className="mb-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm text-primary font-medium">Enhancing...</span>
-                          <span className="text-xs text-muted-foreground">{progress}%</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-3 mb-3">
-                        <p className="text-sm text-muted-foreground">
-                          {stats.isEnhanced
-                            ? `${stats.totalScenes} scenes • ${stats.acceptedScenes} enhanced`
-                            : 'Not enhanced yet'
-                          }
-                        </p>
-                        {stats.isEnhanced && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                            Enhanced
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {chapter.content && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {chapter.content.substring(0, 150)}...
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center space-x-2 ml-4">
-                    <button
-                      onClick={() => handleEditChapter(chapter.id)}
-                      className="btn-ghost btn-sm"
-                      disabled={isEnhancing}
-                    >
-                      Edit
-                    </button>
-
-                    {!stats.isEnhanced && !isEnhancing && (
-                      <button
-                        onClick={() => handleEnhanceChapter(chapter)}
-                        className="btn-primary btn-sm"
-                      >
-                        Enhance
-                      </button>
-                    )}
-
-                    {stats.isEnhanced && !isEnhancing && (
-                      <button
-                        onClick={() => handleEnhanceChapter(chapter)}
-                        className="btn-ghost btn-sm text-primary"
-                      >
-                        Retry Images
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+                chapter={chapter}
+                stats={stats}
+                isEnhancing={isEnhancing}
+                progress={progress}
+                onEdit={() => handleEditChapter(chapter.id)}
+                onEnhance={() => handleEnhanceChapter(chapter)}
+                onDelete={() => handleDeleteChapter(chapter.id)}
+              />
             );
           })}
 
-          {story.chapters.length === 0 && (
+          {story.enhanced_content.chapters.length === 0 && (
             <div className="text-center py-12">
               <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">

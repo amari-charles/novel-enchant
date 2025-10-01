@@ -46,12 +46,12 @@ interface Scene {
 
 type Route =
   | { type: 'stories' }
-  | { type: 'story-editor'; storyId: string }
+  | { type: 'story-editor'; storyId: string; chapterId?: string }
   | { type: 'story-reading'; storyId: string; chapterIndex?: number }
 
 interface MyStoriesPageProps {
   onNavigateToUpload?: () => void;
-  onNavigate?: (route: Route | { type: string; storyId?: string }) => void;
+  onNavigate?: (route: Route | { type: string; storyId?: string; chapterId?: string }) => void;
   currentRoute?: Route;
 }
 
@@ -59,17 +59,15 @@ type View = 'list' | 'story-editor' | 'reading';
 
 export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
   onNavigateToUpload,
-  onNavigate
+  onNavigate,
+  currentRoute
 }) => {
   const { user } = useAuth();
   const [stories, setStories] = useState<Story[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<View>('list');
-  const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid');
   const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'partial' | 'complete'>('all');
-  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
   const loadStories = useCallback(async () => {
     try {
@@ -146,16 +144,12 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
   };
 
   const handleEditStory = (storyId: string) => {
-    setSelectedStoryId(storyId);
-    setCurrentView('story-editor');
     if (onNavigate) {
       onNavigate({ type: 'story-editor', storyId });
     }
   };
 
   const handleReadStory = (story: Story, chapterIndex: number = 0) => {
-    setSelectedStory(story);
-    setCurrentView('reading');
     if (onNavigate) {
       onNavigate({ type: 'story-reading', storyId: story.id, chapterIndex });
     }
@@ -184,9 +178,9 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
   };
 
   const handleBackToList = () => {
-    setCurrentView('list');
-    setSelectedStoryId(null);
-    setSelectedStory(null);
+    if (onNavigate) {
+      onNavigate({ type: 'stories' });
+    }
     // Reload stories to get latest data
     loadStories();
   };
@@ -205,23 +199,32 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
     return badges[status as keyof typeof badges] || badges.draft;
   };
 
-  // Render sub-views
-  if (currentView === 'story-editor' && selectedStoryId) {
+  // Render sub-views based on currentRoute
+  if (currentRoute?.type === 'story-editor') {
     return (
       <StoryEditorPage
-        storyId={selectedStoryId}
+        storyId={currentRoute.storyId}
+        chapterId={currentRoute.chapterId}
         onBack={handleBackToList}
+        onNavigate={(chapterId) => {
+          if (onNavigate) {
+            onNavigate({ type: 'story-editor', storyId: currentRoute.storyId, chapterId });
+          }
+        }}
       />
     );
   }
 
-  if (currentView === 'reading' && selectedStory) {
-    return (
-      <ReadingView
-        story={selectedStory}
-        onBack={handleBackToList}
-      />
-    );
+  if (currentRoute?.type === 'story-reading') {
+    const story = stories.find(s => s.id === currentRoute.storyId);
+    if (story) {
+      return (
+        <ReadingView
+          story={story}
+          onBack={handleBackToList}
+        />
+      );
+    }
   }
 
   // Main stories list view

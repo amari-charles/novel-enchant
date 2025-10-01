@@ -70,107 +70,81 @@ export const StoryCard: React.FC<StoryCardProps> = ({
   };
 
   if (displayMode === 'list') {
+    const previewImage = story.preview_image;
+
     return (
-      <div className="group bg-card rounded-lg border border-border hover:shadow-md transition-shadow flex items-center p-6">
-        {/* Story Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="font-semibold text-lg text-foreground line-clamp-1">
+      <div
+        onClick={onEdit}
+        className="group bg-card rounded-lg border border-border hover:shadow-md transition-shadow p-6 cursor-pointer"
+      >
+        <div className="flex items-center gap-4">
+          {/* Story Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-lg text-foreground mb-2">
               {story.title}
             </h3>
-            <span className={`ml-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusBadge.color}`}>
-              {statusBadge.label}
-            </span>
-          </div>
 
-          {story.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-              {story.description}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground mb-2">
               <span>{getProgressText()}</span>
               <span className="mx-2">•</span>
               <span>Updated {formatDate(story.updated_at)}</span>
             </div>
 
             {story.status !== 'draft' && (
-              <div className="w-24">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                  <span>{getProgressPercentage()}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-1.5">
-                  <div
-                    className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                    style={{ width: `${getProgressPercentage()}%` }}
-                  />
-                </div>
-              </div>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusBadge.color}`}>
+                {statusBadge.label}
+              </span>
             )}
           </div>
 
-          {/* Tags */}
-          {story.tags && story.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {story.tags.slice(0, 3).map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground"
-                >
-                  {tag}
-                </span>
-              ))}
-              {story.tags.length > 3 && (
-                <span className="text-xs text-muted-foreground">
-                  +{story.tags.length - 3} more
-                </span>
+          {/* Right side: Image + Menu */}
+          <div className="flex items-center gap-3">
+            {previewImage && (
+              <img
+                src={previewImage}
+                alt={story.title}
+                className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+              />
+            )}
+
+            <div className="relative flex-shrink-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDropdown(!showDropdown);
+                }}
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
+                aria-label="More options"
+              >
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01" />
+                </svg>
+              </button>
+
+              {showDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDropdown(false);
+                    }}
+                  />
+                  <div className="absolute right-0 top-10 bg-card border border-border rounded-lg shadow-lg py-2 min-w-[120px] z-20">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                        setShowDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      Delete Story
+                    </button>
+                  </div>
+                </>
               )}
             </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center space-x-3 ml-6">
-          <button
-            onClick={onEdit}
-            className="btn-primary btn-sm"
-          >
-            Edit
-          </button>
-          {stats.totalChapters > 0 && (
-            <button
-              onClick={() => onRead(0)}
-              className="btn-ghost btn-sm"
-            >
-              Read
-            </button>
-          )}
-          <div className="relative">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="btn-ghost btn-sm p-2"
-              aria-label="More options"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01" />
-              </svg>
-            </button>
-
-            {showDropdown && (
-              <div className="absolute right-0 top-8 bg-card border border-border rounded-lg shadow-lg py-2 min-w-[120px] z-10">
-                <button
-                  onClick={() => {
-                    onDelete();
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                >
-                  Delete Story
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -179,7 +153,10 @@ export const StoryCard: React.FC<StoryCardProps> = ({
 
   // Grid view
   return (
-    <div className="group bg-card rounded-lg border border-border hover:shadow-md transition-shadow overflow-hidden">
+    <div
+      onClick={onEdit}
+      className="group bg-card rounded-lg border border-border hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+    >
       {/* Preview Image */}
       <div className="aspect-[16/9] bg-gradient-to-r from-primary/10 to-secondary/10 relative">
         {story.preview_image ? (
@@ -207,7 +184,10 @@ export const StoryCard: React.FC<StoryCardProps> = ({
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="relative">
             <button
-              onClick={() => setShowDropdown(!showDropdown)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDropdown(!showDropdown);
+              }}
               className="bg-black/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/30 transition-colors"
               aria-label="More options"
             >
@@ -219,7 +199,8 @@ export const StoryCard: React.FC<StoryCardProps> = ({
             {showDropdown && (
               <div className="absolute right-0 top-10 bg-card border border-border rounded-lg shadow-lg py-2 min-w-[120px] z-20">
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onDelete();
                     setShowDropdown(false);
                   }}
@@ -288,23 +269,20 @@ export const StoryCard: React.FC<StoryCardProps> = ({
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={onEdit}
-            className="btn-primary btn-sm"
-          >
-            Edit Story
-          </button>
-          {stats.totalChapters > 0 && (
+        {stats.totalChapters > 0 && (
+          <div className="flex items-center justify-end">
             <button
-              onClick={() => onRead(0)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRead(0);
+              }}
               className="btn-ghost btn-sm"
               aria-label="Read story"
             >
               Read
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="text-xs text-muted-foreground mt-3">
           Updated {formatDate(story.updated_at)}
