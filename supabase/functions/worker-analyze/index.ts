@@ -8,10 +8,10 @@ serve(async (req) => {
   try {
     const { runId } = await req.json();
     const { data: run } = await supa().from("enhancement_runs").select("id,chapter_id,config").eq("id", runId).single();
-    const { data: chapter } = await supa().from("chapters").select("raw_text").eq("id", run.chapter_id).single();
+    const { data: chapter } = await supa().from("chapters").select("content").eq("id", run.chapter_id).single();
 
     // Use stub text analysis that creates mock scenes
-    const scenes = await createMockScenes(chapter.raw_text, run.config.capScenes);
+    const scenes = await createMockScenes(chapter.content, run.config.capScenes);
 
     await insertScenes(runId, scenes);
     await setRunStatus(runId, "generating");

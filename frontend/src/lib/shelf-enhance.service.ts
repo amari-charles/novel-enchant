@@ -106,12 +106,21 @@ export class ShelfEnhanceService {
   }
 
   private static async createTempChapter(storyId: string, text: string, title: string): Promise<string> {
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     const { data, error } = await supabase
       .from('chapters')
       .insert({
         story_id: storyId,
-        idx: 0,
-        raw_text: text
+        user_id: user.id,
+        title: title || 'Untitled Chapter',
+        content: text,
+        enhanced_content: { chapters: [] },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .select('id')
       .single();
