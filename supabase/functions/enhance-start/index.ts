@@ -80,7 +80,7 @@ serve(async (req) => {
         chapterText: chapterText || null,
         chapterTitle: chapterTitle || null
       }
-    }, supabase);
+    }, supabase, userId);
 
     await Registry.queue().enqueue("AnalyzeChapter", { runId }, { userId, runId });
 

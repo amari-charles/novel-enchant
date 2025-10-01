@@ -1,9 +1,10 @@
 import { supa } from "./db.ts";
-export async function createRun(chapterId:string, snapshot:any, client?:any){
+export async function createRun(chapterId:string|null, snapshot:any, client?:any, userId?:string){
   const db = client || supa();
-  const { data, error } = await db.from("enhancement_runs").insert({
-    chapter_id: chapterId, status: "queued", ...snapshot
-  }).select("id").single();
+  const insertData: any = { status: "queued", ...snapshot };
+  if (chapterId) insertData.chapter_id = chapterId;
+  if (userId) insertData.user_id = userId;
+  const { data, error } = await db.from("enhancement_runs").insert(insertData).select("id").single();
   if (error) throw error;
   return data.id as string;
 }
