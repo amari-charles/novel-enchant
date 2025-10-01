@@ -54,32 +54,33 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
   return (
     <div
       onClick={() => !isEnhancing && onEdit()}
-      className="w-full p-6 border border-border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      className="w-full p-6 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      style={{ borderRadius: '12px' }}
     >
       {/* Main container using flexbox */}
       <div className="flex items-center gap-4">
 
         {/* Left side: Title and stats - takes up remaining space */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-foreground mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1 truncate">
             {chapter.title || `Chapter ${chapter.order_index + 1}`}
           </h3>
 
           {isEnhancing ? (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-primary font-medium">Enhancing...</span>
-                <span className="text-xs text-muted-foreground">{progress}%</span>
+                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">Enhancing...</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{progress}%</span>
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
+                  className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span>
                 {stats.isEnhanced
                   ? `${stats.totalScenes} scenes • ${stats.acceptedScenes} enhanced`
@@ -87,9 +88,12 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                 }
               </span>
               {stats.isEnhanced && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                  Enhanced
-                </span>
+                <>
+                  <span>•</span>
+                  <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                    Enhanced
+                  </span>
+                </>
               )}
             </div>
           )}
@@ -113,12 +117,14 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                 e.stopPropagation();
                 setShowDropdown(!showDropdown);
               }}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label="More options"
               disabled={isEnhancing}
             >
-              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01" />
+              <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5" />
+                <circle cx="12" cy="12" r="1.5" />
+                <circle cx="12" cy="19" r="1.5" />
               </svg>
             </button>
 
@@ -131,14 +137,14 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                     setShowDropdown(false);
                   }}
                 />
-                <div className="absolute right-0 top-10 bg-card border border-border rounded-lg shadow-lg py-2 min-w-[160px] z-20">
+                <div className="absolute right-0 top-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 min-w-[160px] z-20">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onEnhance();
                       setShowDropdown(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-secondary transition-colors"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     {stats.isEnhanced ? 'Re-enhance' : 'Auto-enhance'}
                   </button>
@@ -148,7 +154,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                       onDelete();
                       setShowDropdown(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                   >
                     Delete
                   </button>
