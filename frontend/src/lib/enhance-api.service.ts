@@ -1,7 +1,10 @@
 import { supabase } from "./supabase";
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface EnhanceChapterRequest {
-  chapterId: string;
+  chapterId?: string;
+  chapterText?: string;
+  chapterTitle?: string;
   stylePreset?: string;
   capScenes?: number;
 }
@@ -58,45 +61,75 @@ export class EnhanceApiService {
     });
   }
 
-  static async pollEnhancementStatus(
+  static async subscribeToEnhancementStatus(
     runId: string,
     onProgress?: (status: EnhanceStatusResponse) => void,
     onComplete?: (status: EnhanceStatusResponse) => void,
     onError?: (error: Error) => void
-  ): Promise<void> {
-    const pollInterval = 2000; // 2 seconds
-    const maxPolls = 150; // 5 minutes max
-    let polls = 0;
+  ): Promise<RealtimeChannel> {
+    // Get initial status
+    try {
+      const initialStatus = await this.getEnhancementStatus(runId);
+      onProgress?.(initialStatus);
 
-    const poll = async () => {
-      try {
-        polls++;
-        const status = await this.getEnhancementStatus(runId);
-
-        onProgress?.(status);
-
-        if (status.status === 'completed') {
-          onComplete?.(status);
-          return;
-        }
-
-        if (status.status === 'failed') {
-          onError?.(new Error('Enhancement failed'));
-          return;
-        }
-
-        if (polls >= maxPolls) {
-          onError?.(new Error('Enhancement timed out'));
-          return;
-        }
-
-        // Continue polling
-        setTimeout(poll, pollInterval);
-      } catch (error) {
-        onError?.(error instanceof Error ? error : new Error('Unknown error'));
+      // If already completed or failed, call appropriate callback
+      if (initialStatus.status === 'completed') {
+        onComplete?.(initialStatus);
+      } else if (initialStatus.status === 'failed') {
+        onError?.(new Error('Enhancement failed'));
       }
-    };
+    } catch (error) {
+      onError?.(error instanceof Error ? error : new Error('Failed to get initial status'));
+    }
 
-    poll();
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel(`enhancement:${runId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'enhancement_runs',
+          filter: `id=eq.${runId}`
+        },
+        async () => {
+          try {
+            const status = await this.getEnhancementStatus(runId);
+            onProgress?.(status);
+
+            if (status.status === 'completed') {
+              onComplete?.(status);
+              channel.unsubscribe();
+            } else if (status.status === 'failed') {
+              onError?.(new Error('Enhancement failed'));
+              channel.unsubscribe();
+            }
+          } catch (error) {
+            onError?.(error instanceof Error ? error : new Error('Failed to get status update'));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'scenes',
+          filter: `enhancement_run_id=eq.${runId}`
+        },
+        async () => {
+          // Scene updated - refresh status
+          try {
+            const status = await this.getEnhancementStatus(runId);
+            onProgress?.(status);
+          } catch (error) {
+            // Ignore scene update errors, main run updates will catch completion
+          }
+        }
+      )
+      .subscribe();
+
+    return channel;
   }
 }

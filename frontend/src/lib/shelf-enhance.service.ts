@@ -29,9 +29,9 @@ export class ShelfEnhanceService {
         capScenes: 5
       });
 
-      // Poll for completion
+      // Subscribe to real-time updates
       return new Promise((resolve, reject) => {
-        EnhanceApiService.pollEnhancementStatus(
+        EnhanceApiService.subscribeToEnhancementStatus(
           runId,
           (status) => {
             // Report progress for each scene

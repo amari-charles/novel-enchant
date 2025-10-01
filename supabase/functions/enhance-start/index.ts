@@ -84,8 +84,8 @@ serve(async (req) => {
 
     await Registry.queue().enqueue("AnalyzeChapter", { runId }, { userId, runId });
 
-    // Trigger worker dispatch
-    await fetch(new URL(req.url).origin + "/functions/v1/worker-dispatch", { method: "POST" }).catch(() => {});
+    // Worker dispatch runs on a schedule (every minute via cron)
+    // No need to trigger manually - jobs will be picked up automatically
 
     return new Response(
       JSON.stringify({ success: true, runId }),
