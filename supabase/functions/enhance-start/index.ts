@@ -74,7 +74,7 @@ serve(async (req) => {
       consistency_policy: policy.consistencyPolicy,
       style_preset: stylePreset || 'cinematic',
       config: { capScenes: policy.capScenes, imageDefaults: policy.imageDefaults }
-    });
+    }, supabase);
 
     await Registry.queue().enqueue("AnalyzeChapter", { runId }, { userId, runId });
 
