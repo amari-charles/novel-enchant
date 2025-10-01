@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import { Button, Card, CardContent } from '../shared/ui-components'
 import type { AIAnalysisResult } from '../services/ai-analysis'
-import type { CreateStoryForm } from '../shared/type-definitions'
+// import type { CreateStoryForm } from '../shared/type-definitions'
+
+interface CreateStoryForm {
+  title?: string
+  description?: string
+  genre?: string
+  style_preset?: string
+}
 
 interface AIAnalysisPreviewProps {
   analysis: AIAnalysisResult

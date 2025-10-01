@@ -1,4 +1,8 @@
-import type { CreateStoryForm } from '../shared/type-definitions'
+// import type { CreateStoryForm } from '../shared/type-definitions'
+
+interface CreateStoryForm {
+  style_preset?: string
+}
 
 // AI Analysis Service for Story Content Processing
 export interface AIAnalysisResult {

@@ -46,7 +46,7 @@ export function FileUpload({
     if (validFiles.length > 0) {
       onFileSelect(validFiles)
     }
-  }, [onFileSelect, maxSize, onError])
+  }, [onFileSelect, maxSize, onError]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()

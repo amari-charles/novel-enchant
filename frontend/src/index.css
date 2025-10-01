@@ -1,63 +1,269 @@
 @import "tailwindcss";
 
 :root {
-  /* Light mode - Clean, book-like, calm */
-  --background: 0 0% 99%; /* #fdfdfd - almost white for reading comfort */
-  --foreground: 0 0% 10%; /* #1a1a1a - dark gray for text */
-  --card: 0 0% 100%; /* #ffffff - pure white for cards */
-  --card-foreground: 0 0% 10%; /* #1a1a1a - dark text on cards */
-  --muted: 0 0% 96%; /* #f5f5f5 - subtle backgrounds */
-  --muted-foreground: 0 0% 45%; /* #737373 - muted text */
-  --border: 0 0% 91%; /* #e5e5e5 - light borders */
-  --input: 0 0% 96%; /* #f5f5f5 - input backgrounds */
-  --primary: 217 91% 60%; /* #3b82f6 - blue primary */
-  --primary-foreground: 0 0% 98%; /* #fafafa - text on primary */
-  --secondary: 0 0% 96%; /* #f5f5f5 - secondary backgrounds */
-  --secondary-foreground: 0 0% 10%; /* #1a1a1a - text on secondary */
-  --accent: 0 0% 96%; /* #f5f5f5 - accent backgrounds */
-  --accent-foreground: 0 0% 10%; /* #1a1a1a - text on accents */
-
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  line-height: 1.6;
-  font-weight: 400;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --destructive: #dc2626;
 }
 
 .dark {
-  /* Dark mode - Elegant, legible, Kindle-like */
-  --background: 0 0% 7%; /* #121212 - warm dark for eye comfort */
-  --foreground: 0 0% 92%; /* #eaeaea - soft light gray, not pure white */
-  --card: 0 0% 9%; /* #171717 - slightly lighter than background */
-  --card-foreground: 0 0% 92%; /* #eaeaea - soft text on cards */
-  --muted: 0 0% 12%; /* #1f1f1f - subtle dark backgrounds */
-  --muted-foreground: 0 0% 60%; /* #999999 - muted text in dark */
-  --border: 0 0% 18%; /* #2e2e2e - subtle dark borders */
-  --input: 0 0% 12%; /* #1f1f1f - input backgrounds */
-  --primary: 217 91% 60%; /* #3b82f6 - same blue, good contrast */
-  --primary-foreground: 0 0% 98%; /* #fafafa - text on primary */
-  --secondary: 0 0% 12%; /* #1f1f1f - secondary backgrounds */
-  --secondary-foreground: 0 0% 92%; /* #eaeaea - text on secondary */
-  --accent: 0 0% 12%; /* #1f1f1f - accent backgrounds */
-  --accent-foreground: 0 0% 92%; /* #eaeaea - text on accents */
-}
-
-* {
-  border-color: hsl(var(--border));
+  --background: #0b0b0b;
+  --foreground: #fafafa;
+  --card: #1e1e1f;
+  --card-foreground: #fafafa;
+  --border: #333333;
+  --muted: #2a2a2a;
+  --muted-foreground: #a3a3a3;
+  --accent: #2a2a2a;
+  --accent-foreground: #fafafa;
+  --primary: #60a5fa;
+  --primary-foreground: #0b0b0b;
+  --destructive: #ef4444;
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.bg-card:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Story card sizing improvements */
+.grid .bg-card {
+  max-height: 400px;
+}
+
+/* Reduce padding on cards */
+.bg-card .p-6 {
+  padding: 1rem !important;
+}
+
+/* Make image aspect ratio smaller */
+.aspect-\[16\/9\] {
+  aspect-ratio: 16/10 !important;
+}
+
+/* Constrain card content */
+.bg-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.bg-card > div:last-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bg-muted {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.text-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+.bg-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.border-border {
+  border-color: var(--border);
+}
+
+.text-destructive {
+  color: var(--destructive);
+}
+
+.bg-destructive\/10 {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.dark .bg-destructive\/10 {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Standardized Button System */
+
+/* Base button styles - applied to all buttons */
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary Button - Main actions like "View Story" */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Secondary Button - Secondary actions like "Add More Chapters" */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--foreground);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--muted);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Ghost Button - Subtle actions */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--muted-foreground);
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+/* Small Button Size */
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Large Button Size */
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+/* Link Button - For text-only actions */
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  padding: 0.25rem 0.5rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btn-link:hover:not(:disabled) {
+  color: #2563eb;
+  text-decoration: none;
+}
+
 
 #root {
   width: 100%;
   min-height: 100vh;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-overlay: var(--overlay);
+
+  /* Octet-based design system colors */
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-success-bg: var(--success-bg);
+  --color-warning-bg: var(--warning-bg);
+  --color-destructive-bg: var(--destructive-bg);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

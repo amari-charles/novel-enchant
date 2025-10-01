@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## CRITICAL: NO MOCKING APPROACH
+
+**NEVER USE MOCKING OR LOCALSTORAGE FOR DATABASE OPERATIONS**
+
+The user has explicitly stated multiple times to NOT use mocking approaches. Always use real Supabase database operations. If there are RLS policy issues, fix the policies or permissions, do not work around them with mocks.
+
+This applies to:
+- Enhanced copies saving
+- Job creation and tracking
+- Any database operations
+
+Use real Supabase client calls only. Fix authentication and RLS policies properly.
+
 ## Project Overview
 
 Novel Enchant is an AI-powered storytelling platform that transforms written novels into immersive visual experiences. The platform automatically extracts key scenes from uploaded books, generates stunning visual representations using AI image generation, and creates an interactive gallery for readers to explore their favorite stories visually.
@@ -30,6 +43,11 @@ Novel Enchant is an AI-powered storytelling platform that transforms written nov
 - **Image Generation**: AI-generated visuals using SDXL/Stable Diffusion
 - **Gallery View**: Interactive display of book scenes with generated images
 - **Book Management**: Library for managing uploaded books and generated content
+- **Reader Enhance** (NEW): Simple flow for readers to enhance stories with auto-generated images
+  - Entry from My Shelf only (no navbar item)
+  - Automatic scene detection (3-5 scenes per 1k words)
+  - One-click accept/retry for each image
+  - Private enhanced copies saved to My Shelf
 
 ### State Management
 
@@ -47,6 +65,56 @@ Novel Enchant is an AI-powered storytelling platform that transforms written nov
   - `track-entities`: Character and entity tracking across scenes
   - `generate-image`: AI image generation using SDXL/Stable Diffusion
 - TypeScript types generated from Supabase schema
+
+## Recent Changes
+
+### AI-Powered Story Illustration System (Spec 003) - Mock Services Implemented ✅
+- **Core Features**:
+  - Auto-generate 2-3 illustrations per chapter with character consistency
+  - Manual image insertion at specific cursor positions
+  - Create images from highlighted text selections
+  - Character registry with candidate management (confirm/ignore/merge)
+  - Retry/accept mechanisms for generated images
+- **Implementation Status**:
+  - ✅ MockEnhancementService - Auto-enhance, manual insert, retry workflows
+  - ✅ MockCharacterService - Character detection, resolution, consistency checking
+  - ✅ MockAnchorService - Position validation, anchor management, text reordering
+  - ✅ Contract tests for all service interfaces (majority passing)
+  - ✅ Integration tests for complete user workflows
+  - 🔄 React hooks and context providers (next: T016-T018)
+  - 🔄 UI components and integration (pending)
+- **Mock Implementation Details**:
+  - Deterministic placeholders using picsum.photos with seeded randomization
+  - Character names follow "Character A/B/C" patterns for UX consistency
+  - Realistic processing delays and quality scores
+  - Interface-compatible for future AI service swapping
+- **Key Entities**:
+  - `Work` - Author's complete story with style preferences
+  - `Chapter` - Individual chapter with text content
+  - `Character` - Named entity with consistency tracking
+  - `Anchor` - Stable position marker for image placement
+  - `Image` - Generated illustration with quality scores
+  - `Prompt` - Text description with character references
+- **Service Interfaces**:
+  - `EnhancementService` - Auto/manual generation with retry
+  - `CharacterService` - Detection, resolution, consistency
+  - `AnchorService` - Position tracking and validation
+
+### Reader Enhance Feature (Spec 001)
+- **Routes**:
+  - `/shelf` - My Shelf listing (enhanced copies + bookmarks)
+  - `/enhance` - Reader enhance flow (paste/upload → process → save)
+  - `/shelf/:copyId` - Reading view for enhanced copies
+- **API Endpoints**:
+  - `POST /api/enhance/start` - Begin enhancement job
+  - `GET /api/enhance/status` - Check job progress
+  - `POST /api/enhance/accept` - Accept generated image
+  - `POST /api/enhance/retry` - Regenerate scene image
+  - `POST /api/shelf/save` - Save completed enhancement
+- **New Tables**:
+  - `enhanced_copies` - Stores reader's enhanced stories
+  - `enhance_jobs` - Tracks enhancement progress
+  - `uploads` - File upload metadata
 
 ## Development Commands
 

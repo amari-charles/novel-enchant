@@ -36,7 +36,7 @@ export function Button({
   return (
     <button
       className={classes}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       {...props}
     >
       {children}
