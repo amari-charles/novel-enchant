@@ -8,10 +8,20 @@ serve(async (req) => {
   try {
     const { runId } = await req.json();
     const { data: run } = await supa().from("enhancement_runs").select("id,chapter_id,config").eq("id", runId).single();
-    const { data: chapter } = await supa().from("chapters").select("content").eq("id", run.chapter_id).single();
+
+    // Get text from config (new approach) or from chapters table (legacy)
+    let chapterText: string;
+    if (run.config.chapterText) {
+      chapterText = run.config.chapterText;
+    } else if (run.chapter_id) {
+      const { data: chapter } = await supa().from("chapters").select("content").eq("id", run.chapter_id).single();
+      chapterText = chapter.content;
+    } else {
+      throw new Error('No chapter text found in config or database');
+    }
 
     // Use stub text analysis that creates mock scenes
-    const scenes = await createMockScenes(chapter.content, run.config.capScenes);
+    const scenes = await createMockScenes(chapterText, run.config.capScenes);
 
     await insertScenes(runId, scenes);
     await setRunStatus(runId, "generating");

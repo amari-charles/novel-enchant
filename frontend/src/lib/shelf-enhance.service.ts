@@ -21,13 +21,10 @@ export class ShelfEnhanceService {
     onProgress?: (sceneIndex: number, progress: { status: string; message: string; imageUrl?: string }) => void
   ): Promise<ShelfEnhanceResult> {
     try {
-      // Create a temporary story and chapter for the new architecture
-      const tempStoryId = await this.createTempStory(storyTitle);
-      const tempChapterId = await this.createTempChapter(tempStoryId, chapterText, chapterTitle);
-
-      // Start enhancement using new API
+      // Start enhancement with text directly (no temp chapters needed)
       const { runId } = await EnhanceApiService.startEnhancement({
-        chapterId: tempChapterId,
+        chapterText,
+        chapterTitle,
         stylePreset: 'cinematic',
         capScenes: 5
       });
@@ -64,9 +61,6 @@ export class ShelfEnhanceService {
                 updated_at: new Date().toISOString()
               }));
 
-              // Clean up temporary data
-              await this.cleanupTempData(tempStoryId);
-
               resolve({
                 success: true,
                 updatedScenes
@@ -85,62 +79,6 @@ export class ShelfEnhanceService {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
-    }
-  }
-
-  private static async createTempStory(title: string): Promise<string> {
-    const { data, error } = await supabase
-      .from('stories')
-      .insert({
-        title: `[TEMP] ${title}`,
-        user_id: (await supabase.auth.getUser()).data.user?.id
-      })
-      .select('id')
-      .single();
-
-    if (error || !data) {
-      throw new Error('Failed to create temporary story');
-    }
-
-    return data.id;
-  }
-
-  private static async createTempChapter(storyId: string, text: string, title: string): Promise<string> {
-    const user = (await supabase.auth.getUser()).data.user;
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-
-    const { data, error } = await supabase
-      .from('chapters')
-      .insert({
-        story_id: storyId,
-        user_id: user.id,
-        title: title || 'Untitled Chapter',
-        content: text,
-        enhanced_content: { chapters: [] },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .select('id')
-      .single();
-
-    if (error || !data) {
-      throw new Error('Failed to create temporary chapter');
-    }
-
-    return data.id;
-  }
-
-  private static async cleanupTempData(storyId: string): Promise<void> {
-    // Delete the temporary story (chapters will be deleted by cascade)
-    const { error } = await supabase
-      .from('stories')
-      .delete()
-      .eq('id', storyId);
-
-    if (error) {
-      console.warn('Failed to cleanup temporary data:', error);
     }
   }
 }

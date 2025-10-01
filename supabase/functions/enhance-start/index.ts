@@ -46,11 +46,12 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { chapterId, stylePreset, capScenes } = body;
+    const { chapterId, chapterText, chapterTitle, stylePreset, capScenes } = body;
 
-    if (!chapterId) {
+    // Accept either chapterId (legacy) or chapterText (new direct approach)
+    if (!chapterId && !chapterText) {
       return new Response(
-        JSON.stringify({ error: 'Missing required field: chapterId' }),
+        JSON.stringify({ error: 'Missing required field: chapterId or chapterText' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -66,14 +67,19 @@ serve(async (req) => {
       imageDefaults: { width: 1280, height: 720, format: 'webp' as const }
     };
 
-    const runId = await createRun(chapterId, {
+    const runId = await createRun(chapterId || null, {
       pipeline_version: policy.pipelineVersion,
       text_provider: policy.textProvider,
       image_provider: policy.imageProvider,
       moderation_provider: policy.moderationProvider,
       consistency_policy: policy.consistencyPolicy,
       style_preset: stylePreset || 'cinematic',
-      config: { capScenes: policy.capScenes, imageDefaults: policy.imageDefaults }
+      config: {
+        capScenes: policy.capScenes,
+        imageDefaults: policy.imageDefaults,
+        chapterText: chapterText || null,
+        chapterTitle: chapterTitle || null
+      }
     }, supabase);
 
     await Registry.queue().enqueue("AnalyzeChapter", { runId }, { userId, runId });
