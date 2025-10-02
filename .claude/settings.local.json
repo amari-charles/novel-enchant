@@ -32,7 +32,8 @@
       "Bash(git restore:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(printf \"Y\\n\")"
+      "Bash(printf \"Y\\n\")",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

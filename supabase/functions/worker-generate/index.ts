@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { Registry } from "../../../packages/registry.ts";
 import { supa } from "../../../packages/dal/db.ts";
 import { nextAttempt, createImageAttempt, finalizeImage } from "../../../packages/dal/images.ts";
-import { setCurrentImage } from "../../../packages/dal/scenes.ts";
+import { setCurrentImage, setSceneStatus } from "../../../packages/dal/scenes.ts";
 
 serve(async (req) => {
   try {
@@ -34,6 +34,9 @@ serve(async (req) => {
     // Set current if first
     const { data: existing } = await supa().from("scenes_current_image").select("scene_id").eq("scene_id", sceneId).maybeSingle();
     if (!existing) await setCurrentImage(sceneId, imageId);
+
+    // Mark scene as completed
+    await setSceneStatus(sceneId, 'completed');
 
     // Enqueue next scene (serial)
     const { data: next } = await supa()
