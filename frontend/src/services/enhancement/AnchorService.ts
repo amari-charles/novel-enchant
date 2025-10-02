@@ -1,21 +1,45 @@
 /**
  * Anchor Service
  * Manages position markers where images are inserted in chapters
+ * Business logic layer over AnchorRepository
  */
 
 import type { IAnchorService, Anchor } from './IAnchorService';
+import type { IAnchorRepository } from './repositories/IAnchorRepository';
+import type { IChapterRepository } from './repositories/IChapterRepository';
 
 export class AnchorService implements IAnchorService {
+  constructor(
+    private anchorRepository: IAnchorRepository,
+    private chapterRepository: IChapterRepository
+  ) {}
+
   /**
    * Create a new anchor at a specific position in a chapter
    * @param chapterId - The chapter ID
    * @param position - The position in the chapter text
    * @returns The created anchor
    */
-  async createAnchor(_chapterId: string, _position: number): Promise<Anchor> {
-    // TODO: Implement anchor creation
-    // Create anchor record in database
-    throw new Error('Not implemented');
+  async createAnchor(chapterId: string, position: number): Promise<Anchor> {
+    // Validate position before creating anchor
+    const isValid = await this.validatePosition(chapterId, position);
+    if (!isValid) {
+      throw new Error(`Invalid position ${position} for chapter ${chapterId}`);
+    }
+
+    const anchor = await this.anchorRepository.create({
+      chapter_id: chapterId,
+      position
+    });
+
+    return {
+      id: anchor.id,
+      chapter_id: anchor.chapter_id,
+      position: anchor.position,
+      active_image_id: anchor.active_enhancement_id,
+      created_at: anchor.created_at,
+      updated_at: anchor.updated_at
+    };
   }
 
   /**
@@ -23,10 +47,20 @@ export class AnchorService implements IAnchorService {
    * @param anchorId - The anchor ID
    * @returns The anchor if found, null otherwise
    */
-  async getAnchor(_anchorId: string): Promise<Anchor | null> {
-    // TODO: Implement anchor retrieval
-    // Fetch anchor from database
-    throw new Error('Not implemented');
+  async getAnchor(anchorId: string): Promise<Anchor | null> {
+    const anchor = await this.anchorRepository.get(anchorId);
+    if (!anchor) {
+      return null;
+    }
+
+    return {
+      id: anchor.id,
+      chapter_id: anchor.chapter_id,
+      position: anchor.position,
+      active_image_id: anchor.active_enhancement_id,
+      created_at: anchor.created_at,
+      updated_at: anchor.updated_at
+    };
   }
 
   /**
@@ -34,10 +68,10 @@ export class AnchorService implements IAnchorService {
    * @param anchorId - The anchor ID
    * @param imageId - The image ID to set as active
    */
-  async updateActiveImage(_anchorId: string, _imageId: string): Promise<void> {
-    // TODO: Implement active image update
-    // Update anchor.active_image_id in database
-    throw new Error('Not implemented');
+  async updateActiveImage(anchorId: string, imageId: string): Promise<void> {
+    await this.anchorRepository.update(anchorId, {
+      active_enhancement_id: imageId
+    });
   }
 
   /**
@@ -46,10 +80,14 @@ export class AnchorService implements IAnchorService {
    * @param position - The position to validate
    * @returns True if position is valid, false otherwise
    */
-  async validatePosition(_chapterId: string, _position: number): Promise<boolean> {
-    // TODO: Implement position validation
-    // Check if position is within chapter text bounds
-    throw new Error('Not implemented');
+  async validatePosition(chapterId: string, position: number): Promise<boolean> {
+    const chapter = await this.chapterRepository.get(chapterId);
+    if (!chapter) {
+      return false;
+    }
+
+    const content = chapter.content || chapter.text_content || '';
+    return position >= 0 && position <= content.length;
   }
 
   /**
@@ -57,9 +95,23 @@ export class AnchorService implements IAnchorService {
    * @param chapterId - The chapter ID
    * @returns Array of anchors in the chapter
    */
-  async getAnchorsForChapter(_chapterId: string): Promise<Anchor[]> {
-    // TODO: Implement chapter anchors retrieval
-    // Fetch all anchors for chapter from database
-    throw new Error('Not implemented');
+  async getAnchorsForChapter(chapterId: string): Promise<Anchor[]> {
+    const anchors = await this.anchorRepository.getByChapterId(chapterId);
+    return anchors.map(anchor => ({
+      id: anchor.id,
+      chapter_id: anchor.chapter_id,
+      position: anchor.position,
+      active_image_id: anchor.active_enhancement_id,
+      created_at: anchor.created_at,
+      updated_at: anchor.updated_at
+    }));
+  }
+
+  /**
+   * Delete an anchor
+   * @param anchorId - The anchor ID
+   */
+  async deleteAnchor(anchorId: string): Promise<void> {
+    await this.anchorRepository.delete(anchorId);
   }
 }

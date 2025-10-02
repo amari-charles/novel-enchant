@@ -5,16 +5,26 @@
  */
 
 import type { IImageGenerator, GeneratedImage } from './IImageGenerator';
+import type { IImageAIClient } from './IImageAIClient';
 
 export class ImageGenerator implements IImageGenerator {
+  constructor(private imageAI: IImageAIClient) {}
+
   /**
    * Generate an image from a prompt
    * @param prompt - The text prompt describing the image to generate
    * @returns Generated image with URL and metadata
    */
-  async generateImage(_prompt: string): Promise<GeneratedImage> {
-    // TODO: Implement actual image generation API call
-    // This could call DALL-E, Stable Diffusion, Midjourney, etc.
-    throw new Error('Not implemented');
+  async generateImage(prompt: string): Promise<GeneratedImage> {
+    const imageUrl = await this.imageAI.generateImage(prompt);
+
+    return {
+      imageUrl,
+      prompt,
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        provider: this.imageAI.constructor.name
+      }
+    };
   }
 }

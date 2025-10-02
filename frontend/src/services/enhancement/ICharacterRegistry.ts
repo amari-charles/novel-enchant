@@ -26,6 +26,20 @@ export interface CharacterContext {
   metadata?: Record<string, unknown>;
 }
 
+/**
+ * Scene character analysis result
+ * Contains both known and new characters found in a scene
+ */
+export interface SceneCharacterAnalysis {
+  /** IDs of known characters found in the scene (already in registry) */
+  knownCharacterIds: string[];
+  /** New characters detected in the scene (not yet in registry) */
+  newCharacters: Array<{
+    name: string;
+    visualDescription: string;
+  }>;
+}
+
 export interface ICharacterRegistry {
   /**
    * Detect characters from text using AI/NLP
@@ -33,6 +47,33 @@ export interface ICharacterRegistry {
    * @returns Array of detected characters with confidence scores
    */
   detectCharacters(text: string): Promise<Character[]>;
+
+  /**
+   * Identify which characters appear in a specific scene
+   * Checks against existing registry and detects new characters
+   * @param sceneText - The scene text to analyze
+   * @param storyId - The story ID to scope character search
+   * @returns Analysis containing known and new characters
+   */
+  identifyCharactersInScene(sceneText: string, storyId: string): Promise<SceneCharacterAnalysis>;
+
+  /**
+   * Get visual descriptions for characters to maintain consistency
+   * @param characterIds - IDs of characters to get descriptions for
+   * @returns Map of character ID to visual description
+   */
+  getVisualDescriptions(characterIds: string[]): Promise<Map<string, string>>;
+
+  /**
+   * Register new characters discovered in a scene
+   * @param characters - Array of new characters with names and descriptions
+   * @param storyId - The story ID
+   * @returns Array of created character records
+   */
+  registerNewCharacters(
+    characters: Array<{ name: string; visualDescription: string }>,
+    storyId: string
+  ): Promise<Character[]>;
 
   /**
    * Get character context for prompt building

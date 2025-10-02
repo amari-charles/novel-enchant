@@ -31,10 +31,4 @@ export interface IEnhancementService {
    * @param anchorId - The anchor ID where the enhancement will be placed
    */
   enhanceFromSelection(selection: string, anchorId: string): Promise<void>;
-
-  /**
-   * Core enhancement pipeline that orchestrates the enhancement process
-   * TODO: Add relevant orchestrators as inputs (scene extractor, image generator, etc.)
-   */
-  enhancementPipeline(): Promise<void>;
 }

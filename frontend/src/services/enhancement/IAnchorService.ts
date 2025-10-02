@@ -52,4 +52,10 @@ export interface IAnchorService {
    * @returns Array of anchors in the chapter
    */
   getAnchorsForChapter(chapterId: string): Promise<Anchor[]>;
+
+  /**
+   * Delete an anchor
+   * @param anchorId - The anchor ID
+   */
+  deleteAnchor(anchorId: string): Promise<void>;
 }

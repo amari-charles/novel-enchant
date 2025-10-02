@@ -25,25 +25,11 @@ export interface SceneSelectionResult {
   sceneCount: number;
 }
 
-/**
- * Optional context about characters for scene selection
- */
-export interface CharacterRegistryContext {
-  /** List of character names to consider when selecting scenes */
-  characters?: string[];
-  /** Additional metadata about characters */
-  metadata?: Record<string, unknown>;
-}
-
 export interface ISceneSelector {
   /**
-   * Extract scenes from text input
+   * Extract visually compelling scenes from text
    * @param text - The text to extract scenes from
-   * @param characterRegistryContext - Optional context about characters in the text
    * @returns Result containing selected scenes and metadata
    */
-  selectScenes(
-    text: string,
-    characterRegistryContext?: CharacterRegistryContext
-  ): Promise<SceneSelectionResult>;
+  selectScenes(text: string): Promise<SceneSelectionResult>;
 }

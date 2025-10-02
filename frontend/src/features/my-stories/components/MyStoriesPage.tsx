@@ -10,38 +10,22 @@ import { useAuth } from '@/contexts/auth-context';
 import { StoryCard } from './StoryCard';
 import { ChapterListPage } from './ChapterListPage';
 import { ReadingView } from './ReadingView';
+import { StoryRepository } from '@/services/enhancement/repositories/StoryRepository';
+import { ChapterRepository } from '@/services/enhancement/repositories/ChapterRepository';
+import type { Story as DBStory } from '@/services/enhancement/repositories/IStoryRepository';
+import type { Chapter as DBChapter } from '@/services/enhancement/repositories/IChapterRepository';
 
-// Story types from both old systems
-interface Story {
-  id: string;
-  user_id: string;
-  title: string;
-  description?: string | null;
-  tags?: string[];
+// UI types (extends DB types)
+interface Story extends Omit<DBStory, 'style_preferences'> {
   status: 'draft' | 'partial' | 'complete';
   chapters: Chapter[];
-  created_at: string;
-  updated_at: string;
+  tags?: string[];
   preview_image?: string;
   scene_count?: number;
 }
 
-interface Chapter {
-  id: string;
-  title?: string;
-  content?: string;
-  order_index: number;
-  scenes?: Scene[];
+interface Chapter extends DBChapter {
   enhanced?: boolean;
-}
-
-interface Scene {
-  id: string;
-  excerpt: string;
-  image_url?: string;
-  status: 'pending' | 'generating' | 'generated' | 'accepted' | 'failed';
-  accepted?: boolean;
-  order_index?: number;
 }
 
 type Route =

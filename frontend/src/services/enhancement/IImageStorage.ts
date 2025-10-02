@@ -5,12 +5,15 @@
 
 export interface IImageStorage {
   /**
-   * Upload an image to storage
+   * Upload an image to storage and create media record
    * @param imageBlob - The image file/blob to upload
    * @param path - The storage path (e.g., "users/{userId}/images/{imageId}.png")
-   * @returns The storage path of the uploaded image
+   * @returns Object containing storage path and media ID
    */
-  uploadImage(imageBlob: Blob | File, path: string): Promise<string>;
+  uploadImage(imageBlob: Blob | File, path: string): Promise<{
+    storagePath: string;
+    mediaId: string;
+  }>;
 
   /**
    * Get the public URL for an image
