@@ -36,12 +36,17 @@ serve(async (req) => {
     if (!existing) await setCurrentImage(sceneId, imageId);
 
     // Enqueue next scene (serial)
-    const { data: next } = await supa().rpc("exec_sql", {
-      sql: `select id from scenes where enhancement_run_id='${run.id}' and idx>${scene.idx} order by idx asc limit 1;`
-    } as any);
+    const { data: next } = await supa()
+      .from('scenes')
+      .select('id')
+      .eq('enhancement_run_id', run.id)
+      .gt('idx', scene.idx)
+      .order('idx', { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
-    if (next?.[0]?.id) {
-      await Registry.queue().enqueue("GenerateImage", { sceneId: next[0].id, attempt: 0 }, { runId: run.id });
+    if (next?.id) {
+      await Registry.queue().enqueue("GenerateImage", { sceneId: next.id, attempt: 0 }, { runId: run.id });
     } else {
       // No more scenes, finalize the run
       await Registry.queue().enqueue("FinalizeRun", { runId: run.id }, { runId: run.id });
