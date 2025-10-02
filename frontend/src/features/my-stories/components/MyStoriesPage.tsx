@@ -55,8 +55,6 @@ interface MyStoriesPageProps {
   currentRoute?: Route;
 }
 
-type View = 'list' | 'story-editor' | 'reading';
-
 export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
   onNavigateToUpload,
   onNavigate,

@@ -36,7 +36,7 @@ export const SimpleChapterEditor: React.FC<SimpleChapterEditorProps> = ({
   });
   const [showFontMenu, setShowFontMenu] = useState(false);
 
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const lastSavedContentRef = useRef({ title: chapter.title || '', content: chapter.content || '' });
 
   useEffect(() => {

@@ -26,7 +26,33 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export interface Database {
   public: {
     Tables: {
-      works: {
+      users: {
+        Row: {
+          id: string
+          display_name: string | null
+          avatar_url: string | null
+          preferences: Record<string, unknown>
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          display_name?: string | null
+          avatar_url?: string | null
+          preferences?: Record<string, unknown>
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          display_name?: string | null
+          avatar_url?: string | null
+          preferences?: Record<string, unknown>
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      stories: {
         Row: {
           id: string
           user_id: string
@@ -58,7 +84,7 @@ export interface Database {
       chapters: {
         Row: {
           id: string
-          work_id: string
+          story_id: string
           title: string | null
           text_content: string
           order_index: number
@@ -67,7 +93,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          work_id: string
+          story_id: string
           title?: string | null
           text_content: string
           order_index?: number
@@ -76,7 +102,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          work_id?: string
+          story_id?: string
           title?: string | null
           text_content?: string
           order_index?: number
@@ -89,7 +115,7 @@ export interface Database {
           id: string
           chapter_id: string
           position: number
-          active_image_id: string | null
+          active_enhancement_id: string | null
           created_at: string
           updated_at: string
         }
@@ -97,7 +123,7 @@ export interface Database {
           id?: string
           chapter_id: string
           position: number
-          active_image_id?: string | null
+          active_enhancement_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -105,76 +131,94 @@ export interface Database {
           id?: string
           chapter_id?: string
           position?: number
-          active_image_id?: string | null
+          active_enhancement_id?: string | null
           created_at?: string
           updated_at?: string
         }
       }
-      prompts: {
+      media: {
         Row: {
           id: string
-          anchor_id: string
-          version: number
-          body: string
-          ref_ids: string[]
-          seed: string | null
+          user_id: string
+          url: string
+          storage_path: string
+          media_type: 'image' | 'audio' | 'video'
+          file_size: number | null
+          mime_type: string | null
+          width: number | null
+          height: number | null
+          duration: number | null
           metadata: Record<string, unknown>
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          anchor_id: string
-          version?: number
-          body: string
-          ref_ids?: string[]
-          seed?: string | null
+          user_id: string
+          url: string
+          storage_path: string
+          media_type: 'image' | 'audio' | 'video'
+          file_size?: number | null
+          mime_type?: string | null
+          width?: number | null
+          height?: number | null
+          duration?: number | null
           metadata?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          anchor_id?: string
-          version?: number
-          body?: string
-          ref_ids?: string[]
-          seed?: string | null
-          metadata?: Record<string, unknown>
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      images: {
-        Row: {
-          id: string
-          anchor_id: string
-          prompt_id: string
-          url: string
-          thumbnail_url: string | null
-          status: 'generating' | 'completed' | 'failed'
-          metadata: Record<string, unknown>
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          anchor_id: string
-          prompt_id: string
-          url: string
-          thumbnail_url?: string | null
-          status?: 'generating' | 'completed' | 'failed'
-          metadata?: Record<string, unknown>
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          anchor_id?: string
-          prompt_id?: string
+          user_id?: string
           url?: string
-          thumbnail_url?: string | null
+          storage_path?: string
+          media_type?: 'image' | 'audio' | 'video'
+          file_size?: number | null
+          mime_type?: string | null
+          width?: number | null
+          height?: number | null
+          duration?: number | null
+          metadata?: Record<string, unknown>
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      enhancements: {
+        Row: {
+          id: string
+          anchor_id: string
+          chapter_id: string
+          enhancement_type: 'ai_image' | 'user_image' | 'audio' | 'animation'
+          media_id: string | null
+          status: 'generating' | 'completed' | 'failed'
+          seed: string | null
+          config: Record<string, unknown>
+          metadata: Record<string, unknown>
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          anchor_id: string
+          chapter_id: string
+          enhancement_type: 'ai_image' | 'user_image' | 'audio' | 'animation'
+          media_id?: string | null
           status?: 'generating' | 'completed' | 'failed'
+          seed?: string | null
+          config?: Record<string, unknown>
+          metadata?: Record<string, unknown>
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          anchor_id?: string
+          chapter_id?: string
+          enhancement_type?: 'ai_image' | 'user_image' | 'audio' | 'animation'
+          media_id?: string | null
+          status?: 'generating' | 'completed' | 'failed'
+          seed?: string | null
+          config?: Record<string, unknown>
           metadata?: Record<string, unknown>
           created_at?: string
           updated_at?: string
@@ -183,34 +227,37 @@ export interface Database {
       characters: {
         Row: {
           id: string
-          work_id: string
+          story_id: string
           name: string | null
           short_desc: string | null
           aliases: string[]
           status: 'candidate' | 'confirmed' | 'ignored' | 'merged'
           confidence: number
+          merged_into_id: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          work_id: string
+          story_id: string
           name?: string | null
           short_desc?: string | null
           aliases?: string[]
           status?: 'candidate' | 'confirmed' | 'ignored' | 'merged'
           confidence?: number
+          merged_into_id?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          work_id?: string
+          story_id?: string
           name?: string | null
           short_desc?: string | null
           aliases?: string[]
           status?: 'candidate' | 'confirmed' | 'ignored' | 'merged'
           confidence?: number
+          merged_into_id?: string | null
           created_at?: string
           updated_at?: string
         }

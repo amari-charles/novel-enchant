@@ -32,20 +32,14 @@ interface ChapterStats {
 interface ChapterCardProps {
   chapter: Chapter;
   stats: ChapterStats;
-  isEnhancing: boolean;
-  progress: number;
   onEdit: () => void;
-  onEnhance: () => void;
   onDelete: () => void;
 }
 
 export const ChapterCard: React.FC<ChapterCardProps> = ({
   chapter,
   stats,
-  isEnhancing,
-  progress,
   onEdit,
-  onEnhance,
   onDelete
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -53,7 +47,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
 
   return (
     <div
-      onClick={() => !isEnhancing && onEdit()}
+      onClick={onEdit}
       className="w-full p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
       style={{
         backgroundColor: 'var(--card)',
@@ -71,55 +65,22 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
             {chapter.title || `Chapter ${chapter.order_index + 1}`}
           </h3>
 
-          {isEnhancing ? (
-            <div>
-              {progress === -1 ? (
-                // Error state
-                <>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-destructive font-medium">Enhancement failed</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className="bg-destructive h-2 rounded-full transition-all duration-300"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                </>
-              ) : (
-                // Normal progress state
-                <>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-primary font-medium">Enhancing...</span>
-                    <span className="text-xs text-muted-foreground">{progress}%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>
-                {stats.isEnhanced
-                  ? `${stats.totalScenes} scenes • ${stats.acceptedScenes} enhanced`
-                  : 'Not enhanced yet'
-                }
-              </span>
-              {stats.isEnhanced && (
-                <>
-                  <span>•</span>
-                  <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                    Enhanced
-                  </span>
-                </>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>
+              {stats.isEnhanced
+                ? `${stats.totalScenes} scenes • ${stats.acceptedScenes} enhanced`
+                : 'Not enhanced yet'
+              }
+            </span>
+            {stats.isEnhanced && (
+              <>
+                <span>•</span>
+                <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                  Enhanced
+                </span>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Right side: Image and menu button - stays together */}
@@ -142,7 +103,6 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
               }}
               className="p-2 hover:bg-muted rounded-lg transition-colors"
               aria-label="More options"
-              disabled={isEnhancing}
             >
               <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="5" r="1.5" />
@@ -161,16 +121,6 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                   }}
                 />
                 <div className="absolute right-0 top-10 bg-card border-border rounded-lg shadow-lg py-2 min-w-[160px] z-20">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEnhance();
-                      setShowDropdown(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                  >
-                    {stats.isEnhanced ? 'Re-enhance' : 'Auto-enhance'}
-                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

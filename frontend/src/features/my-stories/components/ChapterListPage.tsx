@@ -8,7 +8,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '@/contexts/auth-context';
 import { SimpleChapterEditor } from './SimpleChapterEditor';
-import { ShelfEnhanceService } from '@/lib/shelf-enhance.service';
 import { ChapterCard } from './ChapterCard';
 
 interface Story {
@@ -54,9 +53,7 @@ type View = 'chapter-list' | 'chapter-editor';
 
 export const ChapterListPage: React.FC<ChapterListPageProps> = ({
   storyId,
-  chapterId,
   onBack,
-  onNavigate
 }) => {
   const { user } = useAuth();
   const [story, setStory] = useState<Story | null>(null);
@@ -64,8 +61,6 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('chapter-list');
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
-  const [enhancingChapters, setEnhancingChapters] = useState<Set<string>>(new Set());
-  const [enhancementProgress, setEnhancementProgress] = useState<{ [chapterId: string]: number }>({});
 
   const loadStory = useCallback(async () => {
     try {
@@ -127,116 +122,6 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
     loadStory();
   };
 
-  const handleEnhanceChapter = async (chapter: Chapter) => {
-    if (!story) return;
-
-    try {
-      setEnhancingChapters(prev => new Set(prev).add(chapter.id));
-      setEnhancementProgress(prev => ({ ...prev, [chapter.id]: 0 }));
-
-      // Use chapter content or title as text for enhancement
-      const chapterText = chapter.content || `Chapter: ${chapter.title || 'Untitled'}`;
-
-      console.log(`Enhancing chapter: ${chapter.title}`);
-
-      // Use the shelf enhance service for chapter enhancement
-      const result = await ShelfEnhanceService.enhanceChapterFromShelf(
-        chapterText,
-        chapter.title || `Chapter ${chapter.order_index + 1}`,
-        story.title,
-        (sceneIndex, totalScenes) => {
-          // Update progress based on actual scene completion
-          const baseProgress = 30;
-          const sceneProgress = totalScenes > 0 ? ((sceneIndex + 1) / totalScenes) * 60 : 0;
-          setEnhancementProgress(prev => ({
-            ...prev,
-            [chapter.id]: Math.min(90, baseProgress + sceneProgress) // Cap at 90% until final save
-          }));
-        }
-      );
-
-      if (!result.success) {
-        throw new Error(result.error || 'Enhancement failed');
-      }
-
-      setEnhancementProgress(prev => ({ ...prev, [chapter.id]: 95 }));
-
-      // Update the chapter with enhanced scenes
-      const updatedChapters = story.enhanced_content.chapters.map(ch => {
-        if (ch.id === chapter.id) {
-          return {
-            ...ch,
-            scenes: result.updatedScenes || [],
-            enhanced: true
-          };
-        }
-        return ch;
-      });
-
-      const updatedStory = {
-        ...story,
-        enhanced_content: {
-          ...story.enhanced_content,
-          chapters: updatedChapters
-        },
-        updated_at: new Date().toISOString()
-      };
-
-      // Save to database - exclude status field which doesn't exist in DB
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { status: _status, ...storyDataForDb } = updatedStory;
-      const { error: updateError } = await supabase
-        .from('chapters')
-        .update(storyDataForDb)
-        .eq('id', story.id);
-
-      if (updateError) {
-        throw new Error(`Failed to save enhancement: ${updateError.message}`);
-      }
-
-      setStory(updatedStory);
-      setEnhancementProgress(prev => ({ ...prev, [chapter.id]: 100 }));
-
-      console.log(`Successfully enhanced chapter: ${chapter.title}`);
-
-      // Clean up progress after delay
-      setTimeout(() => {
-        setEnhancingChapters(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(chapter.id);
-          return newSet;
-        });
-        setEnhancementProgress(prev => {
-          const newProgress = { ...prev };
-          delete newProgress[chapter.id];
-          return newProgress;
-        });
-      }, 1000);
-
-    } catch (error) {
-      console.error('Failed to enhance chapter:', error);
-
-      // Show error in progress bar, not as full-page error
-      setEnhancementProgress(prev => ({
-        ...prev,
-        [chapter.id]: -1 // Use -1 to indicate error state
-      }));
-
-      // Clean up after showing error for a bit
-      setTimeout(() => {
-        setEnhancingChapters(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(chapter.id);
-          return newSet;
-        });
-        setEnhancementProgress(prev => {
-          const newProgress = { ...prev };
-          delete newProgress[chapter.id];
-          return newProgress;
-        });
-      }, 3000); // Show error for 3 seconds
-    }
-  };
 
   const handleAddChapter = async () => {
     if (!story) return;
@@ -463,18 +348,13 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
         <div className="space-y-4">
           {story.enhanced_content.chapters.map((chapter) => {
             const stats = getChapterStats(chapter);
-            const isEnhancing = enhancingChapters.has(chapter.id);
-            const progress = enhancementProgress[chapter.id] || 0;
 
             return (
               <ChapterCard
                 key={chapter.id}
                 chapter={chapter}
                 stats={stats}
-                isEnhancing={isEnhancing}
-                progress={progress}
                 onEdit={() => handleEditChapter(chapter.id)}
-                onEnhance={() => handleEnhanceChapter(chapter)}
                 onDelete={() => handleDeleteChapter(chapter.id)}
               />
             );
