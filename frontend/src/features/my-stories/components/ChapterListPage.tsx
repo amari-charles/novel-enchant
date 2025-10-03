@@ -361,6 +361,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
           {chapters.map((chapter) => (
             <ChapterCard
               key={chapter.id}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               chapter={chapter as any}
               stats={chapter.stats}
               onEdit={() => handleEditChapter(chapter.id)}

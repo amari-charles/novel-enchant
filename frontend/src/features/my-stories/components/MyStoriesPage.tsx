@@ -253,6 +253,7 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
     if (story) {
       return (
         <ReadingView
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           story={story as any}
           onBack={handleBackToList}
         />

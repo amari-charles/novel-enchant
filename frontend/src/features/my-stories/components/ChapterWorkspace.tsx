@@ -418,6 +418,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
             title={title}
             content={content}
             anchors={anchors}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             enhancements={enhancements as any}
             fontClass={fontClass}
             onTitleChange={setTitle}
@@ -431,6 +432,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
             title={title}
             content={content}
             anchors={anchors}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             enhancements={enhancements as any}
             fontClass={fontClass}
           />
