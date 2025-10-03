@@ -33,7 +33,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [anchors, setAnchors] = useState<Anchor[]>([]);
   const [enhancements, setEnhancements] = useState<EnhancementWithMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -187,6 +187,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleManualSave]);
 
   // Font preference handler
@@ -242,7 +243,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
       const anchorRepository = new AnchorRepository();
 
       // Get current paragraph count from content
-      const paragraphs = content.split('\n');
+      // const paragraphs = content.split('\n');
 
       // Update anchors that are now beyond the paragraph count
       const updatedAnchors = await Promise.all(

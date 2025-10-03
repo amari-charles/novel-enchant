@@ -16,7 +16,6 @@ import { ImageGenerator } from './ImageGenerator';
 import { ImageStorage } from './ImageStorage';
 import { CharacterRegistry } from './CharacterRegistry';
 import { StubImageAIClient } from './StubImageAIClient';
-import { StubTextAIClient } from './StubTextAIClient';
 import { OpenAITextAIClient } from './OpenAITextAIClient';
 import { MediaRepository } from './repositories/MediaRepository';
 

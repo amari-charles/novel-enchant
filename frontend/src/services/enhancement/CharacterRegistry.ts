@@ -2,6 +2,7 @@
  * Character Registry
  * Manages character detection, tracking, and context for image generation
  */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import type {
   ICharacterRegistry,

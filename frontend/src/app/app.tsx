@@ -46,9 +46,6 @@ const AuthenticatedApp = () => {
           path += `/${route.chapterIndex}`
         }
         break
-      case 'explore':
-        path = '/explore'
-        break
     }
     window.history.pushState({}, '', path)
   }

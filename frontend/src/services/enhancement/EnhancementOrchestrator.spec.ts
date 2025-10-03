@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { EnhancementOrchestrator } from './EnhancementOrchestrator';
 import type { IChapterRepository } from './repositories/IChapterRepository';

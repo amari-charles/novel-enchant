@@ -6,7 +6,7 @@
 import type { ITextAIClient } from './ITextAIClient';
 
 export class StubTextAIClient implements ITextAIClient {
-  async generateText(_prompt: string): Promise<string> {
+  async generateText(): Promise<string> {
     // Return a mock JSON response with 3 scenes
     return JSON.stringify({
       scenes: [

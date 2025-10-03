@@ -44,23 +44,9 @@ export const StoryCard: React.FC<StoryCardProps> = ({
   stats,
   statusBadge,
   onEdit,
-  onRead,
   onDelete
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getProgressPercentage = () => {
-    if (stats.totalChapters === 0) return 0;
-    return Math.round((stats.enhancedChapters / stats.totalChapters) * 100);
-  };
 
   const getProgressText = () => {
     return `${stats.totalChapters} chapter${stats.totalChapters !== 1 ? 's' : ''}`;

@@ -1,6 +1,7 @@
 /**
  * Unit tests for ImageDecoratorNode
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, test, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';

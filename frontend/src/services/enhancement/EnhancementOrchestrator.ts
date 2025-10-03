@@ -78,6 +78,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
 
     // 1. Delete all existing anchors for this chapter (cascade deletes enhancements)
     console.log('[EnhancementOrchestrator] Deleting existing anchors and enhancements...');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anchorRepository = this.anchorService['anchorRepository'] as any;
     await anchorRepository.deleteByChapterId(chapterId);
     console.log('[EnhancementOrchestrator] Existing enhancements cleared');
@@ -183,6 +184,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
         prompt: generatedImage.prompt,
         generatedAt: generatedImage.metadata?.generatedAt as string | undefined,
         provider: generatedImage.metadata?.provider as string | undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
     });
 
@@ -241,6 +243,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
           prompt: generatedImage.prompt,
           generatedAt: generatedImage.metadata?.generatedAt as string | undefined,
           provider: generatedImage.metadata?.provider as string | undefined
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any
       });
 
