@@ -418,7 +418,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
             title={title}
             content={content}
             anchors={anchors}
-            enhancements={enhancements}
+            enhancements={enhancements as any}
             fontClass={fontClass}
             onTitleChange={setTitle}
             onContentChange={setContent}
@@ -431,7 +431,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
             title={title}
             content={content}
             anchors={anchors}
-            enhancements={enhancements}
+            enhancements={enhancements as any}
             fontClass={fontClass}
           />
         )}

@@ -253,7 +253,7 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
     if (story) {
       return (
         <ReadingView
-          story={story}
+          story={story as any}
           onBack={handleBackToList}
         />
       );

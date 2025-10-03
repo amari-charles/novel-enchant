@@ -361,7 +361,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
           {chapters.map((chapter) => (
             <ChapterCard
               key={chapter.id}
-              chapter={chapter}
+              chapter={chapter as any}
               stats={chapter.stats}
               onEdit={() => handleEditChapter(chapter.id)}
               onEnhance={() => handleEnhanceChapter(chapter.id)}
