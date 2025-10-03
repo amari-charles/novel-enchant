@@ -5,7 +5,6 @@
 
 import type { IEnhancementService } from './IEnhancementService';
 import type { IChapterRepository } from './repositories/IChapterRepository';
-import type { IStoryRepository } from './repositories/IStoryRepository';
 import type { IAnchorService } from './IAnchorService';
 import type { IEnhancementRepository } from './repositories/IEnhancementRepository';
 import type { ISceneSelector } from './ISceneSelector';
@@ -15,7 +14,6 @@ import type { IImageStorage } from './IImageStorage';
 export class EnhancementOrchestrator implements IEnhancementService {
   constructor(
     private chapterRepository: IChapterRepository,
-    private storyRepository: IStoryRepository,
     private anchorService: IAnchorService,
     private enhancementRepository: IEnhancementRepository,
     private sceneSelector: ISceneSelector,
@@ -78,9 +76,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
 
     // 1. Delete all existing anchors for this chapter (cascade deletes enhancements)
     console.log('[EnhancementOrchestrator] Deleting existing anchors and enhancements...');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const anchorRepository = this.anchorService['anchorRepository'] as any;
-    await anchorRepository.deleteByChapterId(chapterId);
+    await this.anchorService.deleteByChapterId(chapterId);
     console.log('[EnhancementOrchestrator] Existing enhancements cleared');
 
     // 2. Call enhance chapter to regenerate
@@ -134,7 +130,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
       contextText,
       chapterId,
       afterParagraphIndex,
-      chapter.style_preferences as ImageStyle | undefined
+      undefined // TODO: Get style preferences from chapter or story
     );
 
     return anchorId;

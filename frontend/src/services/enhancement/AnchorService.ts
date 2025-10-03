@@ -115,4 +115,12 @@ export class AnchorService implements IAnchorService {
   async deleteAnchor(anchorId: string): Promise<void> {
     await this.anchorRepository.delete(anchorId);
   }
+
+  /**
+   * Delete all anchors for a chapter
+   * @param chapterId - The chapter ID
+   */
+  async deleteByChapterId(chapterId: string): Promise<void> {
+    await this.anchorRepository.deleteByChapterId(chapterId);
+  }
 }

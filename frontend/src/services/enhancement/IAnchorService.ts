@@ -58,4 +58,10 @@ export interface IAnchorService {
    * @param anchorId - The anchor ID
    */
   deleteAnchor(anchorId: string): Promise<void>;
+
+  /**
+   * Delete all anchors for a chapter
+   * @param chapterId - The chapter ID
+   */
+  deleteByChapterId(chapterId: string): Promise<void>;
 }
