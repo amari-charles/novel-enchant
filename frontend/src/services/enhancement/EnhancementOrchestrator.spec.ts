@@ -2,7 +2,6 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { EnhancementOrchestrator } from './EnhancementOrchestrator';
 import type { IChapterRepository } from './repositories/IChapterRepository';
-import type { IStoryRepository } from './repositories/IStoryRepository';
 import type { IAnchorService } from './IAnchorService';
 import type { IEnhancementRepository } from './repositories/IEnhancementRepository';
 import type { ISceneSelector } from './ISceneSelector';
@@ -12,7 +11,6 @@ import type { IImageStorage } from './IImageStorage';
 describe('EnhancementOrchestrator', () => {
   let orchestrator: EnhancementOrchestrator;
   let mockChapterRepository: IChapterRepository;
-  let mockStoryRepository: IStoryRepository;
   let mockAnchorService: IAnchorService;
   let mockEnhancementRepository: IEnhancementRepository;
   let mockSceneSelector: ISceneSelector;
@@ -29,22 +27,12 @@ describe('EnhancementOrchestrator', () => {
       getByStoryId: vi.fn(),
     } as any;
 
-    mockStoryRepository = {
-      get: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      getByUserId: vi.fn(),
-    } as any;
-
     mockAnchorService = {
       createAnchor: vi.fn(),
       getAnchor: vi.fn(),
       updateActiveEnhancement: vi.fn(),
       deleteAnchor: vi.fn(),
-      anchorRepository: {
-        deleteByChapterId: vi.fn(),
-      },
+      deleteByChapterId: vi.fn(),
     } as any;
 
     mockEnhancementRepository = {
@@ -71,7 +59,6 @@ describe('EnhancementOrchestrator', () => {
 
     orchestrator = new EnhancementOrchestrator(
       mockChapterRepository,
-      mockStoryRepository,
       mockAnchorService,
       mockEnhancementRepository,
       mockSceneSelector,
@@ -132,13 +119,14 @@ describe('EnhancementOrchestrator', () => {
       };
 
       // Setup mocks
-      vi.mocked(mockChapterRepository.get).mockResolvedValue(mockChapter);
-      vi.mocked(mockSceneSelector.selectScenes).mockResolvedValue({ scenes: mockScenes });
-      vi.mocked(mockAnchorService.createAnchor).mockResolvedValue(mockAnchor);
-      vi.mocked(mockPromptBuilder.generateImageFromScene).mockResolvedValue(mockGeneratedImage);
-      vi.mocked(mockImageStorage.uploadImage).mockResolvedValue({ mediaId: mockMediaId });
-      vi.mocked(mockEnhancementRepository.create).mockResolvedValue(mockEnhancement);
-      vi.mocked(mockAnchorService.updateActiveEnhancement).mockResolvedValue(undefined);
+      (mockChapterRepository.get as any).mockResolvedValue(mockChapter);
+      (mockSceneSelector.selectScenes as any).mockResolvedValue({ scenes: mockScenes });
+      (mockAnchorService.createAnchor as any).mockResolvedValue(mockAnchor);
+      (mockPromptBuilder.generateImageFromScene as any).mockResolvedValue(mockGeneratedImage);
+      (mockImageStorage.uploadImage as any).mockResolvedValue({ mediaId: mockMediaId });
+      (mockEnhancementRepository.create as any).mockResolvedValue(mockEnhancement);
+      (mockAnchorService.updateActiveEnhancement as any).mockResolvedValue(undefined);
+      (mockAnchorService.deleteByChapterId as any).mockResolvedValue(undefined);
 
       // Mock fetch for downloading generated image
       global.fetch = vi.fn().mockResolvedValue({
@@ -149,7 +137,7 @@ describe('EnhancementOrchestrator', () => {
       await orchestrator.reEnhanceChapter(chapterId);
 
       // Verify deletion was called first
-      expect(mockAnchorService['anchorRepository'].deleteByChapterId).toHaveBeenCalledWith(chapterId);
+      expect(mockAnchorService.deleteByChapterId).toHaveBeenCalledWith(chapterId);
 
       // Verify chapter was re-enhanced
       expect(mockChapterRepository.get).toHaveBeenCalledWith(chapterId);
@@ -164,14 +152,15 @@ describe('EnhancementOrchestrator', () => {
     test('should handle chapter not found error', async () => {
       const chapterId = 'nonexistent-chapter';
 
-      vi.mocked(mockChapterRepository.get).mockResolvedValue(null);
+      (mockAnchorService.deleteByChapterId as any).mockResolvedValue(undefined);
+      (mockChapterRepository.get as any).mockResolvedValue(null);
 
       await expect(orchestrator.reEnhanceChapter(chapterId)).rejects.toThrow(
         'Chapter not found: nonexistent-chapter'
       );
 
       // Verify deletion was still attempted
-      expect(mockAnchorService['anchorRepository'].deleteByChapterId).toHaveBeenCalledWith(chapterId);
+      expect(mockAnchorService.deleteByChapterId).toHaveBeenCalledWith(chapterId);
     });
 
     test('should handle chapter with no content', async () => {
@@ -186,13 +175,14 @@ describe('EnhancementOrchestrator', () => {
         updated_at: '2025-01-01T00:00:00Z',
       };
 
-      vi.mocked(mockChapterRepository.get).mockResolvedValue(mockChapter);
+      (mockAnchorService.deleteByChapterId as any).mockResolvedValue(undefined);
+      (mockChapterRepository.get as any).mockResolvedValue(mockChapter);
 
       await expect(orchestrator.reEnhanceChapter(chapterId)).rejects.toThrow(
         'Chapter has no content: chapter-no-content'
       );
 
-      expect(mockAnchorService['anchorRepository'].deleteByChapterId).toHaveBeenCalledWith(chapterId);
+      expect(mockAnchorService.deleteByChapterId).toHaveBeenCalledWith(chapterId);
     });
 
     test('should handle no scenes found in chapter', async () => {
@@ -207,14 +197,15 @@ describe('EnhancementOrchestrator', () => {
         updated_at: '2025-01-01T00:00:00Z',
       };
 
-      vi.mocked(mockChapterRepository.get).mockResolvedValue(mockChapter);
-      vi.mocked(mockSceneSelector.selectScenes).mockResolvedValue({ scenes: [] });
+      (mockAnchorService.deleteByChapterId as any).mockResolvedValue(undefined);
+      (mockChapterRepository.get as any).mockResolvedValue(mockChapter);
+      (mockSceneSelector.selectScenes as any).mockResolvedValue({ scenes: [] });
 
       await expect(orchestrator.reEnhanceChapter(chapterId)).rejects.toThrow(
         'No scenes found in chapter'
       );
 
-      expect(mockAnchorService['anchorRepository'].deleteByChapterId).toHaveBeenCalledWith(chapterId);
+      expect(mockAnchorService.deleteByChapterId).toHaveBeenCalledWith(chapterId);
       expect(mockSceneSelector.selectScenes).toHaveBeenCalledWith(mockChapter.text_content);
     });
 
@@ -244,10 +235,11 @@ describe('EnhancementOrchestrator', () => {
         created_at: '2025-01-01T00:00:00Z',
       };
 
-      vi.mocked(mockChapterRepository.get).mockResolvedValue(mockChapter);
-      vi.mocked(mockSceneSelector.selectScenes).mockResolvedValue({ scenes: mockScenes });
-      vi.mocked(mockAnchorService.createAnchor).mockResolvedValue(mockAnchor);
-      vi.mocked(mockPromptBuilder.generateImageFromScene).mockRejectedValue(
+      (mockAnchorService.deleteByChapterId as any).mockResolvedValue(undefined);
+      (mockChapterRepository.get as any).mockResolvedValue(mockChapter);
+      (mockSceneSelector.selectScenes as any).mockResolvedValue({ scenes: mockScenes });
+      (mockAnchorService.createAnchor as any).mockResolvedValue(mockAnchor);
+      (mockPromptBuilder.generateImageFromScene as any).mockRejectedValue(
         new Error('Image generation failed')
       );
 
@@ -264,13 +256,13 @@ describe('EnhancementOrchestrator', () => {
       const callOrder: string[] = [];
 
       // Track call order
-      vi.mocked(mockAnchorService['anchorRepository'].deleteByChapterId).mockImplementation(
+      (mockAnchorService.deleteByChapterId as any).mockImplementation(
         async () => {
           callOrder.push('deleteByChapterId');
         }
       );
 
-      vi.mocked(mockChapterRepository.get).mockImplementation(async () => {
+      (mockChapterRepository.get as any).mockImplementation(async () => {
         callOrder.push('get');
         return {
           id: chapterId,
@@ -283,7 +275,7 @@ describe('EnhancementOrchestrator', () => {
         };
       });
 
-      vi.mocked(mockSceneSelector.selectScenes).mockResolvedValue({ scenes: [] });
+      (mockSceneSelector.selectScenes as any).mockResolvedValue({ scenes: [] });
 
       try {
         await orchestrator.reEnhanceChapter(chapterId);
