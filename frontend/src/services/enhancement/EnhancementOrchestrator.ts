@@ -54,13 +54,13 @@ export class EnhancementOrchestrator implements IEnhancementService {
     for (let i = 0; i < scenes.length; i++) {
       const scene = scenes[i];
       console.log(`[EnhancementOrchestrator] Processing scene ${i + 1}/${scenes.length}:`, {
-        position: scene.startPosition,
+        afterParagraphIndex: scene.afterParagraphIndex,
         textPreview: scene.sceneText.substring(0, 50)
       });
       await this.processScene(
         scene.sceneText,
         chapterId,
-        scene.startPosition,
+        scene.afterParagraphIndex,
         undefined
       );
       console.log(`[EnhancementOrchestrator] Scene ${i + 1}/${scenes.length} completed`);
@@ -88,13 +88,13 @@ export class EnhancementOrchestrator implements IEnhancementService {
   }
 
   /**
-   * Insert an enhancement at a specific position in a chapter
-   * This creates an anchor at the position and generates an image for it
+   * Insert an enhancement after a specific paragraph in a chapter
+   * This creates an anchor at the paragraph and generates an image for it
    * @param chapterId - The ID of the chapter
-   * @param position - The cursor position where enhancement should be inserted
+   * @param afterParagraphIndex - The paragraph index after which enhancement should be inserted
    * @returns The created anchor ID
    */
-  async insertEnhancement(chapterId: string, position: number): Promise<string> {
+  async insertEnhancement(chapterId: string, afterParagraphIndex: number): Promise<string> {
     // 1. Fetch chapter
     const chapter = await this.chapterRepository.get(chapterId);
     if (!chapter) {
@@ -105,16 +105,17 @@ export class EnhancementOrchestrator implements IEnhancementService {
       throw new Error(`Chapter has no content: ${chapterId}`);
     }
 
-    // 2. Extract surrounding context (500 chars before and after)
-    const contextStart = Math.max(0, position - 500);
-    const contextEnd = Math.min(chapter.text_content.length, position + 500);
-    const contextText = chapter.text_content.slice(contextStart, contextEnd);
+    // 2. Extract surrounding context (the paragraph and adjacent ones)
+    const paragraphs = chapter.text_content.split('\n');
+    const contextStart = Math.max(0, afterParagraphIndex - 1);
+    const contextEnd = Math.min(paragraphs.length, afterParagraphIndex + 2);
+    const contextText = paragraphs.slice(contextStart, contextEnd).join('\n');
 
-    // 3. Process scene at this position (validates position via AnchorService)
+    // 3. Process scene at this paragraph (validates index via AnchorService)
     const anchorId = await this.processScene(
       contextText,
       chapterId,
-      position,
+      afterParagraphIndex,
       chapter.style_preferences as ImageStyle | undefined
     );
 
@@ -169,7 +170,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
     });
 
     // 7. Update anchor's active enhancement
-    await this.anchorService.updateActiveImage(anchorId, enhancement.id);
+    await this.anchorService.updateActiveEnhancement(anchorId, enhancement.id);
   }
 
   /**
@@ -177,14 +178,14 @@ export class EnhancementOrchestrator implements IEnhancementService {
    * Creates anchor, generates image, uploads to storage, and creates enhancement record
    * @param sceneText - The scene text to generate an image for
    * @param chapterId - The chapter ID
-   * @param position - The position in the chapter where this scene occurs
+   * @param afterParagraphIndex - The paragraph index after which this scene occurs
    * @param style - Optional style preferences
    * @returns The created anchor ID
    */
   private async processScene(
     sceneText: string,
     chapterId: string,
-    position: number,
+    afterParagraphIndex: number,
     style?: ImageStyle
   ): Promise<string> {
     // 1. Get story ID from chapter for character consistency
@@ -193,8 +194,8 @@ export class EnhancementOrchestrator implements IEnhancementService {
       throw new Error(`Chapter not found: ${chapterId}`);
     }
 
-    // 2. Create anchor at position (validates position automatically)
-    const anchor = await this.anchorService.createAnchor(chapterId, position);
+    // 2. Create anchor at paragraph index (validates index automatically)
+    const anchor = await this.anchorService.createAnchor(chapterId, afterParagraphIndex);
 
     try {
       // 3. Generate image from scene with character consistency
@@ -227,7 +228,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
       });
 
       // 7. Update anchor with active enhancement
-      await this.anchorService.updateActiveImage(anchor.id, enhancement.id);
+      await this.anchorService.updateActiveEnhancement(anchor.id, enhancement.id);
 
       return anchor.id;
     } catch (error) {

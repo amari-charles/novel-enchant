@@ -15,28 +15,28 @@ export class AnchorService implements IAnchorService {
   ) {}
 
   /**
-   * Create a new anchor at a specific position in a chapter
+   * Create a new anchor after a specific paragraph in a chapter
    * @param chapterId - The chapter ID
-   * @param position - The position in the chapter text
+   * @param afterParagraphIndex - The paragraph index after which the anchor is placed
    * @returns The created anchor
    */
-  async createAnchor(chapterId: string, position: number): Promise<Anchor> {
-    // Validate position before creating anchor
-    const isValid = await this.validatePosition(chapterId, position);
+  async createAnchor(chapterId: string, afterParagraphIndex: number): Promise<Anchor> {
+    // Validate paragraph index before creating anchor
+    const isValid = await this.validateParagraphIndex(chapterId, afterParagraphIndex);
     if (!isValid) {
-      throw new Error(`Invalid position ${position} for chapter ${chapterId}`);
+      throw new Error(`Invalid paragraph index ${afterParagraphIndex} for chapter ${chapterId}`);
     }
 
     const anchor = await this.anchorRepository.create({
       chapter_id: chapterId,
-      position
+      after_paragraph_index: afterParagraphIndex
     });
 
     return {
       id: anchor.id,
       chapter_id: anchor.chapter_id,
-      position: anchor.position,
-      active_image_id: anchor.active_enhancement_id,
+      after_paragraph_index: anchor.after_paragraph_index,
+      active_enhancement_id: anchor.active_enhancement_id,
       created_at: anchor.created_at,
       updated_at: anchor.updated_at
     };
@@ -56,38 +56,39 @@ export class AnchorService implements IAnchorService {
     return {
       id: anchor.id,
       chapter_id: anchor.chapter_id,
-      position: anchor.position,
-      active_image_id: anchor.active_enhancement_id,
+      after_paragraph_index: anchor.after_paragraph_index,
+      active_enhancement_id: anchor.active_enhancement_id,
       created_at: anchor.created_at,
       updated_at: anchor.updated_at
     };
   }
 
   /**
-   * Update the active image for an anchor
+   * Update the active enhancement for an anchor
    * @param anchorId - The anchor ID
-   * @param imageId - The image ID to set as active
+   * @param enhancementId - The enhancement ID to set as active
    */
-  async updateActiveImage(anchorId: string, imageId: string): Promise<void> {
+  async updateActiveEnhancement(anchorId: string, enhancementId: string): Promise<void> {
     await this.anchorRepository.update(anchorId, {
-      active_enhancement_id: imageId
+      active_enhancement_id: enhancementId
     });
   }
 
   /**
-   * Validate that a position is valid within a chapter
+   * Validate that a paragraph index is valid within a chapter
    * @param chapterId - The chapter ID
-   * @param position - The position to validate
-   * @returns True if position is valid, false otherwise
+   * @param afterParagraphIndex - The paragraph index to validate
+   * @returns True if paragraph index is valid, false otherwise
    */
-  async validatePosition(chapterId: string, position: number): Promise<boolean> {
+  async validateParagraphIndex(chapterId: string, afterParagraphIndex: number): Promise<boolean> {
     const chapter = await this.chapterRepository.get(chapterId);
     if (!chapter) {
       return false;
     }
 
     const content = chapter.text_content || '';
-    return position >= 0 && position <= content.length;
+    const paragraphs = content.split('\n');
+    return afterParagraphIndex >= 0 && afterParagraphIndex < paragraphs.length;
   }
 
   /**
@@ -100,8 +101,8 @@ export class AnchorService implements IAnchorService {
     return anchors.map(anchor => ({
       id: anchor.id,
       chapter_id: anchor.chapter_id,
-      position: anchor.position,
-      active_image_id: anchor.active_enhancement_id,
+      after_paragraph_index: anchor.after_paragraph_index,
+      active_enhancement_id: anchor.active_enhancement_id,
       created_at: anchor.created_at,
       updated_at: anchor.updated_at
     }));
