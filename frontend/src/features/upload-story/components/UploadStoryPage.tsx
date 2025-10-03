@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
+import { StoryRepository } from '@/services/enhancement/repositories/StoryRepository';
 
 interface UploadStoryPageProps {
   onNavigateToStories?: () => void;
@@ -52,32 +53,33 @@ export const UploadStoryPage: React.FC<UploadStoryPageProps> = ({
     setError(null);
 
     try {
-      // Create the story record with metadata stored in enhanced_content field
-      const storyData = {
-        user_id: user.id,
-        title: metadata.title.trim(),
-        enhanced_content: {
-          author: metadata.author.trim() || null,
-          description: metadata.description.trim() || null,
-          chapters: [] // Empty - user will add chapters in the editor
-        },
-        original_content: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+      // Ensure user record exists (for existing users before trigger was added)
+      const { error: userError } = await supabase
+        .from('users')
+        .upsert({
+          id: user.id,
+          display_name: user.email?.split('@')[0] || null,
+          preferences: {}
+        }, {
+          onConflict: 'id',
+          ignoreDuplicates: true
+        });
 
-      // Save to chapters table
-      const { data, error: insertError } = await supabase
-        .from('chapters')
-        .insert([storyData])
-        .select()
-        .single();
-
-      if (insertError) {
-        throw new Error(`Failed to create story: ${insertError.message}`);
+      if (userError) {
+        console.warn('Failed to ensure user record exists:', userError);
       }
 
-      setCreatedStoryId(data.id);
+      const storyRepository = new StoryRepository();
+
+      // Create the story record in stories table
+      const story = await storyRepository.create({
+        user_id: user.id,
+        title: metadata.title.trim(),
+        description: metadata.description.trim() || null,
+        author: metadata.author.trim() || null
+      });
+
+      setCreatedStoryId(story.id);
       setCurrentStep('success');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to create story');

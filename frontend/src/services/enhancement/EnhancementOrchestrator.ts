@@ -28,28 +28,45 @@ export class EnhancementOrchestrator implements IEnhancementService {
    * @param chapterId - The ID of the chapter to enhance
    */
   async enhanceChapter(chapterId: string): Promise<void> {
+    console.log('[EnhancementOrchestrator] Starting enhanceChapter for:', chapterId);
+
     // 1. Fetch chapter
     const chapter = await this.chapterRepository.get(chapterId);
     if (!chapter) {
       throw new Error(`Chapter not found: ${chapterId}`);
     }
+    console.log('[EnhancementOrchestrator] Chapter loaded:', { id: chapter.id, textLength: chapter.text_content?.length });
 
-    if (!chapter.content) {
+    if (!chapter.text_content) {
       throw new Error(`Chapter has no content: ${chapterId}`);
     }
 
     // 2. Select scenes from chapter text
-    const { scenes } = await this.sceneSelector.selectScenes(chapter.content);
+    console.log('[EnhancementOrchestrator] Selecting scenes from text...');
+    const { scenes } = await this.sceneSelector.selectScenes(chapter.text_content);
+    console.log('[EnhancementOrchestrator] Found scenes:', scenes.length);
+
+    if (scenes.length === 0) {
+      throw new Error('No scenes found in chapter. The text may be too short or not contain identifiable scenes. Try adding more descriptive content.');
+    }
 
     // 3. Process each scene
-    for (const scene of scenes) {
+    for (let i = 0; i < scenes.length; i++) {
+      const scene = scenes[i];
+      console.log(`[EnhancementOrchestrator] Processing scene ${i + 1}/${scenes.length}:`, {
+        position: scene.startPosition,
+        textPreview: scene.sceneText.substring(0, 50)
+      });
       await this.processScene(
         scene.sceneText,
         chapterId,
         scene.startPosition,
-        chapter.style_preferences as ImageStyle | undefined
+        undefined
       );
+      console.log(`[EnhancementOrchestrator] Scene ${i + 1}/${scenes.length} completed`);
     }
+
+    console.log('[EnhancementOrchestrator] All scenes processed successfully');
   }
 
   /**
@@ -84,14 +101,14 @@ export class EnhancementOrchestrator implements IEnhancementService {
       throw new Error(`Chapter not found: ${chapterId}`);
     }
 
-    if (!chapter.content) {
+    if (!chapter.text_content) {
       throw new Error(`Chapter has no content: ${chapterId}`);
     }
 
     // 2. Extract surrounding context (500 chars before and after)
     const contextStart = Math.max(0, position - 500);
-    const contextEnd = Math.min(chapter.content.length, position + 500);
-    const contextText = chapter.content.slice(contextStart, contextEnd);
+    const contextEnd = Math.min(chapter.text_content.length, position + 500);
+    const contextText = chapter.text_content.slice(contextStart, contextEnd);
 
     // 3. Process scene at this position (validates position via AnchorService)
     const anchorId = await this.processScene(
@@ -111,12 +128,12 @@ export class EnhancementOrchestrator implements IEnhancementService {
    */
   async enhanceFromSelection(selection: string, anchorId: string): Promise<void> {
     // 1. Fetch anchor to validate it exists
-    const anchor = await this.anchorRepository.get(anchorId);
+    const anchor = await this.anchorService.getAnchor(anchorId);
     if (!anchor) {
       throw new Error(`Anchor not found: ${anchorId}`);
     }
 
-    // 2. Fetch chapter to get style preferences
+    // 2. Fetch chapter to get style preferences and story ID
     const chapter = await this.chapterRepository.get(anchor.chapter_id);
     if (!chapter) {
       throw new Error(`Chapter not found: ${anchor.chapter_id}`);
@@ -126,34 +143,33 @@ export class EnhancementOrchestrator implements IEnhancementService {
     const generatedImage = await this.promptBuilder.generateImageFromScene(
       selection,
       undefined,
-      chapter.style_preferences as ImageStyle | undefined
+      chapter.story_id
     );
 
     // 4. Download image blob from URL
     const response = await fetch(generatedImage.imageUrl);
     const imageBlob = await response.blob();
 
-    // 5. Upload to storage
+    // 5. Upload to storage and create media record
     const storagePath = `enhancements/${anchor.chapter_id}/${anchorId}_${Date.now()}.png`;
-    const uploadedPath = await this.imageStorage.uploadImage(imageBlob, storagePath);
+    const { mediaId } = await this.imageStorage.uploadImage(imageBlob, storagePath);
 
-    // 6. Get public URL
-    const publicUrl = await this.imageStorage.getImageUrl(uploadedPath);
-
-    // 7. Create enhancement record
+    // 6. Create enhancement record
     const enhancement = await this.enhancementRepository.create({
       anchor_id: anchorId,
       chapter_id: anchor.chapter_id,
-      prompt: generatedImage.prompt,
-      image_url: publicUrl,
-      storage_path: uploadedPath,
-      status: 'completed'
+      enhancement_type: 'ai_image',
+      media_id: mediaId,
+      status: 'completed',
+      metadata: {
+        prompt: generatedImage.prompt,
+        generatedAt: generatedImage.metadata?.generatedAt as string | undefined,
+        provider: generatedImage.metadata?.provider as string | undefined
+      } as any
     });
 
-    // 8. Update anchor's active enhancement
-    await this.anchorRepository.update(anchorId, {
-      active_enhancement_id: enhancement.id
-    });
+    // 7. Update anchor's active enhancement
+    await this.anchorService.updateActiveImage(anchorId, enhancement.id);
   }
 
   /**
@@ -205,9 +221,9 @@ export class EnhancementOrchestrator implements IEnhancementService {
         status: 'completed',
         metadata: {
           prompt: generatedImage.prompt,
-          generatedAt: generatedImage.metadata?.generatedAt,
-          provider: generatedImage.metadata?.provider
-        }
+          generatedAt: generatedImage.metadata?.generatedAt as string | undefined,
+          provider: generatedImage.metadata?.provider as string | undefined
+        } as any
       });
 
       // 7. Update anchor with active enhancement

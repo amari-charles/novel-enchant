@@ -12,16 +12,26 @@ import { ChapterListPage } from './ChapterListPage';
 import { ReadingView } from './ReadingView';
 import { StoryRepository } from '@/services/enhancement/repositories/StoryRepository';
 import { ChapterRepository } from '@/services/enhancement/repositories/ChapterRepository';
+import { AnchorRepository } from '@/services/enhancement/repositories/AnchorRepository';
+import { EnhancementRepository } from '@/services/enhancement/repositories/EnhancementRepository';
 import type { Story as DBStory } from '@/services/enhancement/repositories/IStoryRepository';
 import type { Chapter as DBChapter } from '@/services/enhancement/repositories/IChapterRepository';
 
 // UI types (extends DB types)
+interface StoryStats {
+  totalChapters: number;
+  enhancedChapters: number;
+  totalScenes: number;
+  acceptedScenes: number;
+}
+
 interface Story extends Omit<DBStory, 'style_preferences'> {
   status: 'draft' | 'partial' | 'complete';
   chapters: Chapter[];
   tags?: string[];
   preview_image?: string;
   scene_count?: number;
+  stats: StoryStats;
 }
 
 interface Chapter extends DBChapter {
@@ -60,36 +70,64 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
         throw new Error('User not authenticated');
       }
 
-      // Load from chapters table (formerly enhanced_copies)
-      const { data: enhancedCopies, error: queryError } = await supabase
-        .from('chapters')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+      // Instantiate repositories
+      const storyRepository = new StoryRepository();
+      const chapterRepository = new ChapterRepository();
+      const anchorRepository = new AnchorRepository();
+      const enhancementRepository = new EnhancementRepository();
 
-      if (queryError) {
-        throw new Error(`Failed to load stories: ${queryError.message}`);
-      }
+      // Load all user stories
+      const dbStories = await storyRepository.getByUserId(user.id);
 
-      // Transform and determine status for each story
-      const transformedStories = (enhancedCopies || []).map(story => {
-        const chapters = story.chapters || [];
-        const enhancedChapters = chapters.filter((ch: Chapter) =>
-          ch.enhanced || (ch.scenes && ch.scenes.length > 0)
-        );
+      // Load chapters for each story and calculate status
+      const transformedStories: Story[] = await Promise.all(
+        dbStories.map(async (dbStory) => {
+          const dbChapters = await chapterRepository.getByStoryId(dbStory.id);
 
-        let status: 'draft' | 'partial' | 'complete' = 'draft';
-        if (enhancedChapters.length > 0) {
-          status = enhancedChapters.length === chapters.length ? 'complete' : 'partial';
-        }
+          // Check enhancements for each chapter and count stats
+          let totalAnchors = 0;
+          let completedEnhancements = 0;
 
-        return {
-          ...story,
-          status,
-          chapters,
-          tags: story.tags || []
-        } as Story;
-      });
+          const chaptersWithEnhancementStatus = await Promise.all(
+            dbChapters.map(async (ch) => {
+              const enhancements = await enhancementRepository.getByChapterId(ch.id);
+              const anchors = await anchorRepository.getByChapterId(ch.id);
+
+              const completed = enhancements.filter(e => e.status === 'completed');
+              const hasCompletedEnhancements = completed.length > 0;
+
+              totalAnchors += anchors.length;
+              completedEnhancements += completed.length;
+
+              return {
+                ...ch,
+                enhanced: hasCompletedEnhancements
+              };
+            })
+          );
+
+          // Calculate status based on enhanced chapters
+          const enhancedChapters = chaptersWithEnhancementStatus.filter(ch => ch.enhanced);
+          let status: 'draft' | 'partial' | 'complete' = 'draft';
+          if (enhancedChapters.length > 0) {
+            status = enhancedChapters.length === chaptersWithEnhancementStatus.length ? 'complete' : 'partial';
+          }
+
+          return {
+            ...dbStory,
+            status,
+            chapters: chaptersWithEnhancementStatus,
+            tags: [],
+            scene_count: totalAnchors,
+            stats: {
+              totalChapters: chaptersWithEnhancementStatus.length,
+              enhancedChapters: enhancedChapters.length,
+              totalScenes: totalAnchors,
+              acceptedScenes: completedEnhancements
+            }
+          } as Story;
+        })
+      );
 
       setStories(transformedStories);
     } catch (error) {
@@ -108,21 +146,6 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
       setError('Please log in to view your stories');
     }
   }, [user, loadStories]);
-
-  const getStoryStats = (story: Story) => {
-    const chapters = story.chapters || [];
-    const enhancedChapters = chapters.filter(ch => ch.enhanced || (ch.scenes && ch.scenes.length > 0));
-    const totalScenes = chapters.flatMap(ch => ch.scenes || []).length;
-    const acceptedScenes = chapters.flatMap(ch => ch.scenes || [])
-      .filter(s => s.status === 'accepted' || s.accepted).length;
-
-    return {
-      totalChapters: chapters.length,
-      enhancedChapters: enhancedChapters.length,
-      totalScenes,
-      acceptedScenes
-    };
-  };
 
   const handleEditStory = (storyId: string) => {
     if (onNavigate) {
@@ -334,7 +357,7 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
                 key={story.id}
                 story={story}
                 displayMode={displayMode}
-                stats={getStoryStats(story)}
+                stats={story.stats}
                 statusBadge={getStatusBadge(story.status)}
                 onEdit={() => handleEditStory(story.id)}
                 onRead={(chapterIndex) => handleReadStory(story, chapterIndex)}

@@ -33,6 +33,7 @@ interface ChapterCardProps {
   chapter: Chapter;
   stats: ChapterStats;
   onEdit: () => void;
+  onEnhance: () => void;
   onDelete: () => void;
 }
 
@@ -40,6 +41,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
   chapter,
   stats,
   onEdit,
+  onEnhance,
   onDelete
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -120,7 +122,17 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                     setShowDropdown(false);
                   }}
                 />
-                <div className="absolute right-0 top-10 bg-card border-border rounded-lg shadow-lg py-2 min-w-[160px] z-20">
+                <div className="absolute right-0 top-10 bg-card border border-border rounded-lg shadow-lg py-2 min-w-[160px] z-20">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEnhance();
+                      setShowDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    Enhance Chapter
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

@@ -12,7 +12,7 @@
 -- Table: users
 -- Purpose: Extended user metadata beyond Supabase auth.users
 -- -----------------------------------------------------
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   -- Primary key that links to Supabase Auth
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
 
@@ -44,7 +44,7 @@ COMMENT ON COLUMN users.updated_at IS 'Last update timestamp. Auto-updated by tr
 -- Table: stories
 -- Purpose: Top-level containers for novels/books
 -- -----------------------------------------------------
-CREATE TABLE stories (
+CREATE TABLE IF NOT EXISTS stories (
   -- Unique identifier for the story
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -80,7 +80,7 @@ COMMENT ON COLUMN stories.updated_at IS 'Last modification timestamp. Auto-updat
 -- Table: chapters
 -- Purpose: Individual chapters within a story
 -- -----------------------------------------------------
-CREATE TABLE chapters (
+CREATE TABLE IF NOT EXISTS chapters (
   -- Unique identifier for the chapter
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -116,7 +116,7 @@ COMMENT ON COLUMN chapters.updated_at IS 'Last modification timestamp. Auto-upda
 -- Table: anchors
 -- Purpose: Precise positions in chapter text where enhancements are placed
 -- -----------------------------------------------------
-CREATE TABLE anchors (
+CREATE TABLE IF NOT EXISTS anchors (
   -- Unique identifier for the anchor
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -148,7 +148,7 @@ COMMENT ON COLUMN anchors.updated_at IS 'Last modification timestamp. Auto-updat
 -- Table: media
 -- Purpose: Physical file storage for images, audio, and video files
 -- -----------------------------------------------------
-CREATE TABLE media (
+CREATE TABLE IF NOT EXISTS media (
   -- Unique identifier for the media file
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -208,7 +208,7 @@ COMMENT ON COLUMN media.updated_at IS 'Last modification timestamp. Auto-updated
 -- Table: enhancements
 -- Purpose: Enhancement instances that link media/animations to story positions
 -- -----------------------------------------------------
-CREATE TABLE enhancements (
+CREATE TABLE IF NOT EXISTS enhancements (
   -- Unique identifier for the enhancement
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -266,7 +266,7 @@ COMMENT ON COLUMN enhancements.updated_at IS 'Last modification timestamp. Auto-
 -- Table: characters
 -- Purpose: Character registry for tracking and maintaining visual consistency
 -- -----------------------------------------------------
-CREATE TABLE characters (
+CREATE TABLE IF NOT EXISTS characters (
   -- Unique identifier for the character
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -316,11 +316,19 @@ COMMENT ON COLUMN characters.updated_at IS 'Last modification timestamp. Auto-up
 -- Add foreign key constraints that have circular dependencies
 
 -- Add foreign key from anchors to enhancements (circular dependency resolved)
-ALTER TABLE anchors
-  ADD CONSTRAINT fk_anchors_active_enhancement
-  FOREIGN KEY (active_enhancement_id)
-  REFERENCES enhancements(id)
-  ON DELETE SET NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'fk_anchors_active_enhancement'
+  ) THEN
+    ALTER TABLE anchors
+      ADD CONSTRAINT fk_anchors_active_enhancement
+      FOREIGN KEY (active_enhancement_id)
+      REFERENCES enhancements(id)
+      ON DELETE SET NULL;
+  END IF;
+END $$;
 
 COMMENT ON CONSTRAINT fk_anchors_active_enhancement ON anchors IS 'Foreign key to currently active enhancement. Added after enhancements table created to resolve circular dependency.';
 
@@ -330,51 +338,51 @@ COMMENT ON CONSTRAINT fk_anchors_active_enhancement ON anchors IS 'Foreign key t
 -- Indexes for foreign keys and common query patterns
 
 -- Stories indexes
-CREATE INDEX idx_stories_user_id ON stories(user_id);
+CREATE INDEX IF NOT EXISTS idx_stories_user_id ON stories(user_id);
 COMMENT ON INDEX idx_stories_user_id IS 'Fast lookup of all stories by user';
 
 -- Chapters indexes
-CREATE INDEX idx_chapters_story_id_order ON chapters(story_id, order_index);
+CREATE INDEX IF NOT EXISTS idx_chapters_story_id_order ON chapters(story_id, order_index);
 COMMENT ON INDEX idx_chapters_story_id_order IS 'Fast ordered retrieval of chapters within a story';
 
 -- Anchors indexes
-CREATE INDEX idx_anchors_chapter_id_position ON anchors(chapter_id, position);
+CREATE INDEX IF NOT EXISTS idx_anchors_chapter_id_position ON anchors(chapter_id, position);
 COMMENT ON INDEX idx_anchors_chapter_id_position IS 'Fast ordered retrieval of anchors within a chapter';
 
-CREATE INDEX idx_anchors_active_enhancement ON anchors(active_enhancement_id);
+CREATE INDEX IF NOT EXISTS idx_anchors_active_enhancement ON anchors(active_enhancement_id);
 COMMENT ON INDEX idx_anchors_active_enhancement IS 'Fast lookup of anchors by active enhancement (for joins)';
 
 -- Media indexes
-CREATE INDEX idx_media_user_id ON media(user_id);
+CREATE INDEX IF NOT EXISTS idx_media_user_id ON media(user_id);
 COMMENT ON INDEX idx_media_user_id IS 'Fast lookup of all media by user (for quota/management)';
 
-CREATE INDEX idx_media_type ON media(media_type);
+CREATE INDEX IF NOT EXISTS idx_media_type ON media(media_type);
 COMMENT ON INDEX idx_media_type IS 'Fast filtering by media type (images, audio, video)';
 
 -- Enhancements indexes
-CREATE INDEX idx_enhancements_anchor_id ON enhancements(anchor_id);
+CREATE INDEX IF NOT EXISTS idx_enhancements_anchor_id ON enhancements(anchor_id);
 COMMENT ON INDEX idx_enhancements_anchor_id IS 'Fast lookup of all enhancements for an anchor';
 
-CREATE INDEX idx_enhancements_chapter_id ON enhancements(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_enhancements_chapter_id ON enhancements(chapter_id);
 COMMENT ON INDEX idx_enhancements_chapter_id IS 'Fast lookup of all enhancements in a chapter';
 
-CREATE INDEX idx_enhancements_media_id ON enhancements(media_id);
+CREATE INDEX IF NOT EXISTS idx_enhancements_media_id ON enhancements(media_id);
 COMMENT ON INDEX idx_enhancements_media_id IS 'Fast lookup of enhancements using specific media';
 
-CREATE INDEX idx_enhancements_status ON enhancements(status);
+CREATE INDEX IF NOT EXISTS idx_enhancements_status ON enhancements(status);
 COMMENT ON INDEX idx_enhancements_status IS 'Fast filtering by generation status (for polling in-progress generations)';
 
-CREATE INDEX idx_enhancements_type ON enhancements(enhancement_type);
+CREATE INDEX IF NOT EXISTS idx_enhancements_type ON enhancements(enhancement_type);
 COMMENT ON INDEX idx_enhancements_type IS 'Fast filtering by enhancement type';
 
 -- Characters indexes
-CREATE INDEX idx_characters_story_id ON characters(story_id);
+CREATE INDEX IF NOT EXISTS idx_characters_story_id ON characters(story_id);
 COMMENT ON INDEX idx_characters_story_id IS 'Fast lookup of all characters in a story';
 
-CREATE INDEX idx_characters_status ON characters(status);
+CREATE INDEX IF NOT EXISTS idx_characters_status ON characters(status);
 COMMENT ON INDEX idx_characters_status IS 'Fast filtering by character status (candidate, confirmed, etc.)';
 
-CREATE INDEX idx_characters_merged_into ON characters(merged_into_id);
+CREATE INDEX IF NOT EXISTS idx_characters_merged_into ON characters(merged_into_id);
 COMMENT ON INDEX idx_characters_merged_into IS 'Fast lookup of characters merged into a specific character';
 
 -- =====================================================
@@ -394,24 +402,31 @@ $$ LANGUAGE plpgsql;
 COMMENT ON FUNCTION update_updated_at_column IS 'Trigger function that automatically updates the updated_at column to current timestamp on row updates';
 
 -- Apply trigger to all tables
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_stories_updated_at ON stories;
 CREATE TRIGGER update_stories_updated_at BEFORE UPDATE ON stories
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_chapters_updated_at ON chapters;
 CREATE TRIGGER update_chapters_updated_at BEFORE UPDATE ON chapters
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_anchors_updated_at ON anchors;
 CREATE TRIGGER update_anchors_updated_at BEFORE UPDATE ON anchors
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_media_updated_at ON media;
 CREATE TRIGGER update_media_updated_at BEFORE UPDATE ON media
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_enhancements_updated_at ON enhancements;
 CREATE TRIGGER update_enhancements_updated_at BEFORE UPDATE ON enhancements
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_characters_updated_at ON characters;
 CREATE TRIGGER update_characters_updated_at BEFORE UPDATE ON characters
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -428,6 +443,57 @@ ALTER TABLE anchors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE enhancements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE characters ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own profile" ON users;
+DROP POLICY IF EXISTS "Users can update own profile" ON users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON users;
+DROP POLICY IF EXISTS "Users can view own stories" ON stories;
+DROP POLICY IF EXISTS "Users can create own stories" ON stories;
+DROP POLICY IF EXISTS "Users can update own stories" ON stories;
+DROP POLICY IF EXISTS "Users can delete own stories" ON stories;
+DROP POLICY IF EXISTS "Users can view own chapters" ON chapters;
+DROP POLICY IF EXISTS "Users can create own chapters" ON chapters;
+DROP POLICY IF EXISTS "Users can create chapters in own stories" ON chapters;
+DROP POLICY IF EXISTS "Users can update own chapters" ON chapters;
+DROP POLICY IF EXISTS "Users can delete own chapters" ON chapters;
+DROP POLICY IF EXISTS "Users can view own anchors" ON anchors;
+DROP POLICY IF EXISTS "Users can view anchors in own stories" ON anchors;
+DROP POLICY IF EXISTS "Users can view anchors in own chapters" ON anchors;
+DROP POLICY IF EXISTS "Users can create own anchors" ON anchors;
+DROP POLICY IF EXISTS "Users can create anchors in own stories" ON anchors;
+DROP POLICY IF EXISTS "Users can create anchors in own chapters" ON anchors;
+DROP POLICY IF EXISTS "Users can update own anchors" ON anchors;
+DROP POLICY IF EXISTS "Users can update anchors in own stories" ON anchors;
+DROP POLICY IF EXISTS "Users can update anchors in own chapters" ON anchors;
+DROP POLICY IF EXISTS "Users can delete own anchors" ON anchors;
+DROP POLICY IF EXISTS "Users can delete anchors in own stories" ON anchors;
+DROP POLICY IF EXISTS "Users can delete anchors in own chapters" ON anchors;
+DROP POLICY IF EXISTS "Users can view own media" ON media;
+DROP POLICY IF EXISTS "Users can upload own media" ON media;
+DROP POLICY IF EXISTS "Users can create own media" ON media;
+DROP POLICY IF EXISTS "Users can update own media" ON media;
+DROP POLICY IF EXISTS "Users can delete own media" ON media;
+DROP POLICY IF EXISTS "Users can view own enhancements" ON enhancements;
+DROP POLICY IF EXISTS "Users can view enhancements in own stories" ON enhancements;
+DROP POLICY IF EXISTS "Users can view enhancements in own chapters" ON enhancements;
+DROP POLICY IF EXISTS "Users can create own enhancements" ON enhancements;
+DROP POLICY IF EXISTS "Users can create enhancements in own stories" ON enhancements;
+DROP POLICY IF EXISTS "Users can create enhancements in own chapters" ON enhancements;
+DROP POLICY IF EXISTS "Users can update own enhancements" ON enhancements;
+DROP POLICY IF EXISTS "Users can update enhancements in own stories" ON enhancements;
+DROP POLICY IF EXISTS "Users can update enhancements in own chapters" ON enhancements;
+DROP POLICY IF EXISTS "Users can delete own enhancements" ON enhancements;
+DROP POLICY IF EXISTS "Users can delete enhancements in own stories" ON enhancements;
+DROP POLICY IF EXISTS "Users can delete enhancements in own chapters" ON enhancements;
+DROP POLICY IF EXISTS "Users can view own characters" ON characters;
+DROP POLICY IF EXISTS "Users can view characters in own stories" ON characters;
+DROP POLICY IF EXISTS "Users can create own characters" ON characters;
+DROP POLICY IF EXISTS "Users can create characters in own stories" ON characters;
+DROP POLICY IF EXISTS "Users can update own characters" ON characters;
+DROP POLICY IF EXISTS "Users can update characters in own stories" ON characters;
+DROP POLICY IF EXISTS "Users can delete own characters" ON characters;
+DROP POLICY IF EXISTS "Users can delete characters in own stories" ON characters;
 
 -- Users table policies
 CREATE POLICY "Users can view own profile"
@@ -647,6 +713,32 @@ CREATE POLICY "Users can delete own characters"
       AND stories.user_id = auth.uid()
     )
   );
+
+-- =====================================================
+-- AUTO-CREATE USER RECORDS ON SIGNUP
+-- =====================================================
+
+-- Function to automatically create user record when someone signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, display_name, preferences)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
+    '{}'::jsonb
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function when a new user signs up
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 
 -- =====================================================
 -- SCHEMA DOCUMENTATION

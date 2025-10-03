@@ -86,7 +86,7 @@ export class AnchorService implements IAnchorService {
       return false;
     }
 
-    const content = chapter.content || chapter.text_content || '';
+    const content = chapter.text_content || '';
     return position >= 0 && position <= content.length;
   }
 

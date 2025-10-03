@@ -79,7 +79,17 @@ ${text}`;
    */
   private parseSceneResponse(response: string, originalText: string): SelectedScene[] {
     try {
-      const parsed = JSON.parse(response);
+      // Strip markdown code blocks if present (OpenAI often wraps JSON in ```json ... ```)
+      let cleanedResponse = response.trim();
+
+      // Remove ```json or ``` wrappers
+      if (cleanedResponse.startsWith('```')) {
+        cleanedResponse = cleanedResponse
+          .replace(/^```(?:json)?\n?/, '') // Remove opening ```json
+          .replace(/\n?```$/, '');          // Remove closing ```
+      }
+
+      const parsed = JSON.parse(cleanedResponse);
       const scenes: SelectedScene[] = [];
 
       for (const scene of parsed.scenes || []) {
@@ -97,6 +107,8 @@ ${text}`;
 
       return scenes;
     } catch (error) {
+      console.error('Scene parsing error:', error);
+      console.error('Response was:', response);
       throw new Error(`Failed to parse scene extraction response: ${error}`);
     }
   }

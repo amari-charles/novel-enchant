@@ -5,41 +5,37 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '@/contexts/auth-context';
-import { SimpleChapterEditor } from './SimpleChapterEditor';
+import { ChapterWorkspace } from './ChapterWorkspace';
 import { ChapterCard } from './ChapterCard';
+import { StoryRepository } from '@/services/enhancement/repositories/StoryRepository';
+import { ChapterRepository } from '@/services/enhancement/repositories/ChapterRepository';
+import { EnhancementRepository } from '@/services/enhancement/repositories/EnhancementRepository';
+import { AnchorRepository } from '@/services/enhancement/repositories/AnchorRepository';
+import { MediaRepository } from '@/services/enhancement/repositories/MediaRepository';
+import { createEnhancementOrchestrator } from '@/services/enhancement/createEnhancementOrchestrator';
+import type { Story as DBStory } from '@/services/enhancement/repositories/IStoryRepository';
+import type { Chapter as DBChapter } from '@/services/enhancement/repositories/IChapterRepository';
 
-interface Story {
-  id: string;
-  user_id: string;
-  title: string;
-  enhanced_content: {
-    author?: string | null;
-    description?: string | null;
-    chapters: Chapter[];
-  };
-  status?: 'draft' | 'partial' | 'complete';
-  updated_at: string;
-  created_at: string;
-}
-
-interface Chapter {
-  id: string;
-  title?: string;
-  content?: string;
-  order_index: number;
-  scenes?: Scene[];
-  enhanced?: boolean;
+interface Story extends DBStory {
+  status: 'draft' | 'partial' | 'complete';
 }
 
 interface Scene {
   id: string;
-  excerpt: string;
   image_url?: string;
-  status: 'pending' | 'generating' | 'generated' | 'accepted' | 'failed';
-  accepted?: boolean;
-  order_index?: number;
+}
+
+interface Chapter extends DBChapter {
+  enhanced: boolean;
+  stats: ChapterStats;
+  scenes?: Scene[];
+}
+
+interface ChapterStats {
+  totalScenes: number;
+  acceptedScenes: number;
+  isEnhanced: boolean;
 }
 
 interface ChapterListPageProps {
@@ -57,10 +53,12 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
 }) => {
   const { user } = useAuth();
   const [story, setStory] = useState<Story | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('chapter-list');
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
+  const [enhancingChapterId, setEnhancingChapterId] = useState<string | null>(null);
 
   const loadStory = useCallback(async () => {
     try {
@@ -71,33 +69,71 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
         throw new Error('User not authenticated');
       }
 
-      const { data: storyData, error: queryError } = await supabase
-        .from('chapters')
-        .select('*')
-        .eq('id', storyId)
-        .eq('user_id', user.id)
-        .single();
+      // Instantiate repositories
+      const storyRepository = new StoryRepository();
+      const chapterRepository = new ChapterRepository();
+      const anchorRepository = new AnchorRepository();
+      const enhancementRepository = new EnhancementRepository();
+      const mediaRepository = new MediaRepository();
 
-      if (queryError) {
-        throw new Error(`Failed to load story: ${queryError.message}`);
-      }
+      // Load story
+      const dbStory = await storyRepository.get(storyId);
 
-      if (!storyData) {
+      if (!dbStory) {
         throw new Error('Story not found');
       }
 
-      // Transform the data to match our interface
-      const transformedStory: Story = {
-        ...storyData,
-        enhanced_content: {
-          author: storyData.enhanced_content?.author || null,
-          description: storyData.enhanced_content?.description || null,
-          chapters: storyData.enhanced_content?.chapters || []
-        },
-        status: storyData.status || 'draft'
-      };
+      // Verify ownership
+      if (dbStory.user_id !== user.id) {
+        throw new Error('Unauthorized');
+      }
 
-      setStory(transformedStory);
+      // Load chapters for this story
+      const dbChapters = await chapterRepository.getByStoryId(storyId);
+
+      // Compute stats for each chapter
+      const chaptersWithStats: Chapter[] = await Promise.all(
+        dbChapters.map(async (dbChapter) => {
+          const anchors = await anchorRepository.getByChapterId(dbChapter.id);
+          const enhancements = await enhancementRepository.getByChapterId(dbChapter.id);
+
+          const completedEnhancements = enhancements.filter(e => e.status === 'completed');
+          const hasEnhancements = completedEnhancements.length > 0;
+
+          // Get first enhancement's media URL for preview
+          const scenes: Scene[] = [];
+          if (completedEnhancements.length > 0 && completedEnhancements[0].media_id) {
+            const media = await mediaRepository.get(completedEnhancements[0].media_id);
+            if (media) {
+              scenes.push({
+                id: completedEnhancements[0].id,
+                image_url: media.url
+              });
+            }
+          }
+
+          return {
+            ...dbChapter,
+            enhanced: hasEnhancements,
+            scenes,
+            stats: {
+              totalScenes: anchors.length,
+              acceptedScenes: completedEnhancements.length,
+              isEnhanced: hasEnhancements
+            }
+          };
+        })
+      );
+
+      // Calculate story status based on chapters
+      const enhancedChapters = chaptersWithStats.filter(ch => ch.enhanced);
+      let status: 'draft' | 'partial' | 'complete' = 'draft';
+      if (enhancedChapters.length > 0) {
+        status = enhancedChapters.length === chaptersWithStats.length ? 'complete' : 'partial';
+      }
+
+      setStory({ ...dbStory, status });
+      setChapters(chaptersWithStats);
     } catch (error) {
       console.error('Failed to load story:', error);
       setError(error instanceof Error ? error.message : 'Failed to load story');
@@ -127,44 +163,57 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
     if (!story) return;
 
     try {
-      const newChapter: Chapter = {
-        id: crypto.randomUUID(),
-        title: `Chapter ${story.enhanced_content.chapters.length + 1}`,
-        content: '',
-        order_index: story.enhanced_content.chapters.length,
-        scenes: [],
-        enhanced: false
-      };
+      const chapterRepository = new ChapterRepository();
 
-      const updatedChapters = [...story.enhanced_content.chapters, newChapter];
-      const updatedStory = {
-        ...story,
-        enhanced_content: {
-          ...story.enhanced_content,
-          chapters: updatedChapters
-        },
-        updated_at: new Date().toISOString()
-      };
+      // Create new chapter in database
+      const newChapter = await chapterRepository.create({
+        story_id: storyId,
+        title: `Chapter ${chapters.length + 1}`,
+        text_content: '',
+        order_index: chapters.length
+      });
 
-      // Save to database - exclude status field which doesn't exist in DB
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { status: _status2, ...storyDataForDb } = updatedStory;
-      const { error: updateError } = await supabase
-        .from('chapters')
-        .update(storyDataForDb)
-        .eq('id', story.id);
-
-      if (updateError) {
-        throw new Error(`Failed to add chapter: ${updateError.message}`);
-      }
-
-      setStory(updatedStory);
+      // Reload story to get updated chapter list
+      await loadStory();
 
       // Automatically open the new chapter for editing
       handleEditChapter(newChapter.id);
     } catch (error) {
       console.error('Failed to add chapter:', error);
       setError(`Failed to add chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleEnhanceChapter = async (chapterId: string) => {
+    if (!story || !user) {
+      console.log('handleEnhanceChapter: Missing story or user', { story, user });
+      return;
+    }
+
+    console.log('Starting enhancement for chapter:', chapterId);
+
+    try {
+      setError(null);
+      setEnhancingChapterId(chapterId);
+
+      // Create the enhancement orchestrator with all dependencies
+      console.log('Creating enhancement orchestrator...');
+      const orchestrator = createEnhancementOrchestrator(user.id);
+
+      // Start the enhancement process
+      console.log('Starting enhancement process...');
+      await orchestrator.enhanceChapter(chapterId);
+
+      console.log('Enhancement completed, reloading story...');
+      // Reload story to show updated enhancement status
+      await loadStory();
+
+      console.log('Story reloaded successfully');
+    } catch (error) {
+      console.error('Failed to enhance chapter:', error);
+      setError(`Failed to enhance chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setEnhancingChapterId(null);
     }
   };
 
@@ -175,46 +224,17 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
     }
 
     try {
-      const updatedChapters = story.enhanced_content.chapters
-        .filter(ch => ch.id !== chapterId)
-        .map((ch, idx) => ({ ...ch, order_index: idx }));
+      const chapterRepository = new ChapterRepository();
 
-      const updatedStory = {
-        ...story,
-        enhanced_content: {
-          ...story.enhanced_content,
-          chapters: updatedChapters
-        },
-        updated_at: new Date().toISOString()
-      };
+      // Delete chapter from database
+      await chapterRepository.delete(chapterId);
 
-      // Save to database - exclude status field which doesn't exist in DB
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { status: _status, ...storyDataForDb } = updatedStory;
-      const { error: updateError } = await supabase
-        .from('chapters')
-        .update(storyDataForDb)
-        .eq('id', story.id);
-
-      if (updateError) {
-        throw new Error(`Failed to delete chapter: ${updateError.message}`);
-      }
-
-      setStory(updatedStory);
+      // Reload story to get updated chapter list
+      await loadStory();
     } catch (error) {
       console.error('Failed to delete chapter:', error);
       setError(`Failed to delete chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  };
-
-  const getChapterStats = (chapter: Chapter) => {
-    const scenes = chapter.scenes || [];
-    const acceptedScenes = scenes.filter(s => s.status === 'accepted' || s.accepted);
-    return {
-      totalScenes: scenes.length,
-      acceptedScenes: acceptedScenes.length,
-      isEnhanced: chapter.enhanced || scenes.length > 0
-    };
   };
 
   if (isLoading) {
@@ -249,7 +269,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
 
   // Chapter Editor View
   if (currentView === 'chapter-editor' && selectedChapterId && story) {
-    const selectedChapter = story.enhanced_content.chapters.find(ch => ch.id === selectedChapterId);
+    const selectedChapter = chapters.find(ch => ch.id === selectedChapterId);
 
     if (!selectedChapter) {
       return (
@@ -265,38 +285,8 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
     }
 
     return (
-      <SimpleChapterEditor
-        chapter={selectedChapter}
-        onSave={async (updatedChapter) => {
-          // Update the chapter in the story
-          const updatedChapters = story.enhanced_content.chapters.map(ch =>
-            ch.id === updatedChapter.id ? updatedChapter : ch
-          );
-
-          const updatedStory = {
-            ...story,
-            enhanced_content: {
-              ...story.enhanced_content,
-              chapters: updatedChapters
-            },
-            updated_at: new Date().toISOString()
-          };
-
-          // Save to database - exclude status field which doesn't exist in DB
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { status: _status, ...storyDataForDb } = updatedStory;
-          const { error: updateError } = await supabase
-            .from('chapters')
-            .update(storyDataForDb)
-            .eq('id', story.id);
-
-          if (updateError) {
-            throw new Error(`Failed to save chapter: ${updateError.message}`);
-          }
-
-          // Update local state
-          setStory(updatedStory);
-        }}
+      <ChapterWorkspace
+        chapterId={selectedChapter.id}
         onBack={handleBackToChapterList}
       />
     );
@@ -321,7 +311,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
             <div>
               <h1 className="text-2xl font-bold text-foreground">{story.title}</h1>
               <p className="text-muted-foreground">
-                {story.enhanced_content.chapters.length} chapters • Last updated {new Date(story.updated_at).toLocaleDateString()}
+                {chapters.length} chapters • Last updated {new Date(story.updated_at).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -344,23 +334,36 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
           </div>
         )}
 
+        {/* Enhancement Progress Overlay */}
+        {enhancingChapterId && (
+          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+            <div className="flex items-center gap-3">
+              <svg className="animate-spin w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 4.708L4 12z"></path>
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-primary">Enhancing chapter...</p>
+                <p className="text-xs text-muted-foreground">Analyzing scenes and generating images. This may take a minute.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Chapters List */}
         <div className="space-y-4">
-          {story.enhanced_content.chapters.map((chapter) => {
-            const stats = getChapterStats(chapter);
+          {chapters.map((chapter) => (
+            <ChapterCard
+              key={chapter.id}
+              chapter={chapter}
+              stats={chapter.stats}
+              onEdit={() => handleEditChapter(chapter.id)}
+              onEnhance={() => handleEnhanceChapter(chapter.id)}
+              onDelete={() => handleDeleteChapter(chapter.id)}
+            />
+          ))}
 
-            return (
-              <ChapterCard
-                key={chapter.id}
-                chapter={chapter}
-                stats={stats}
-                onEdit={() => handleEditChapter(chapter.id)}
-                onDelete={() => handleDeleteChapter(chapter.id)}
-              />
-            );
-          })}
-
-          {story.enhanced_content.chapters.length === 0 && (
+          {chapters.length === 0 && (
             <div className="text-center py-12">
               <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">

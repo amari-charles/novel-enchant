@@ -5,7 +5,6 @@
  */
 
 import type { IPromptBuilder, ImageStyle } from './IPromptBuilder';
-import type { CharacterRegistryContext } from './ISceneSelector';
 import type { IImageGenerator, GeneratedImage } from './IImageGenerator';
 import type { ICharacterRegistry, SceneCharacterAnalysis, Character } from './ICharacterRegistry';
 

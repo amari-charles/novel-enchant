@@ -175,7 +175,17 @@ Format your response as JSON:
     allCharacters: Character[]
   ): SceneCharacterAnalysis {
     try {
-      const parsed = JSON.parse(response);
+      // Strip markdown code blocks if present (OpenAI often wraps JSON in ```json ... ```)
+      let cleanedResponse = response.trim();
+
+      // Remove ```json or ``` wrappers
+      if (cleanedResponse.startsWith('```')) {
+        cleanedResponse = cleanedResponse
+          .replace(/^```(?:json)?\n?/, '') // Remove opening ```json
+          .replace(/\n?```$/, '');          // Remove closing ```
+      }
+
+      const parsed = JSON.parse(cleanedResponse);
 
       // Map known character names to character IDs
       const knownCharacterIds = allCharacters
@@ -189,6 +199,8 @@ Format your response as JSON:
         newCharacters
       };
     } catch (error) {
+      console.error('Character analysis parsing error:', error);
+      console.error('Response was:', response);
       throw new Error(`Failed to parse character analysis: ${error}`);
     }
   }
