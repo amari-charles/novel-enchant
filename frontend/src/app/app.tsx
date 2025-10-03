@@ -12,29 +12,33 @@ import { NavBar } from '../components/NavBar'
 type Route =
   | { type: 'upload' }    // / (Upload Story)
   | { type: 'stories' }   // /stories
-  | { type: 'story-editor'; storyId: string; chapterId?: string }   // /stories/:id/edit/:chapterId?
+  | { type: 'story-editor'; storyId: string }   // /stories/:id/edit (chapter list)
+  | { type: 'chapter-editor'; storyId: string; chapterId: string }   // /stories/:id/chapters/:chapterId (individual chapter)
   | { type: 'story-reading'; storyId: string; chapterIndex?: number }   // /stories/:id/read/:chapter?
   | { type: 'explore' } // /explore
 
 const AuthenticatedApp = () => {
-  const [currentRoute, setCurrentRoute] = useState<Route>({ type: 'upload' })
+  const [currentRoute, setCurrentRoute] = useState<Route>({ type: 'explore' })
 
   const navigate = (route: Route) => {
     setCurrentRoute(route)
     // Update URL without page refresh
     let path = '/'
     switch (route.type) {
-      case 'upload':
+      case 'explore':
         path = '/'
+        break
+      case 'upload':
+        path = '/upload'
         break
       case 'stories':
         path = '/stories'
         break
       case 'story-editor':
         path = `/stories/${route.storyId}/edit`
-        if (route.chapterId) {
-          path += `/${route.chapterId}`
-        }
+        break
+      case 'chapter-editor':
+        path = `/stories/${route.storyId}/chapters/${route.chapterId}`
         break
       case 'story-reading':
         path = `/stories/${route.storyId}/read`
@@ -73,12 +77,20 @@ const AuthenticatedApp = () => {
     if (path === '/explore') return { type: 'explore' }
 
     // Handle story sub-routes
-    const storyEditorMatch = path.match(/^\/stories\/([^/]+)\/edit(?:\/([^/]+))?$/)
+    const chapterEditorMatch = path.match(/^\/stories\/([^/]+)\/chapters\/([^/]+)$/)
+    if (chapterEditorMatch) {
+      return {
+        type: 'chapter-editor',
+        storyId: chapterEditorMatch[1],
+        chapterId: chapterEditorMatch[2]
+      }
+    }
+
+    const storyEditorMatch = path.match(/^\/stories\/([^/]+)\/edit$/)
     if (storyEditorMatch) {
       return {
         type: 'story-editor',
-        storyId: storyEditorMatch[1],
-        chapterId: storyEditorMatch[2]
+        storyId: storyEditorMatch[1]
       }
     }
 
@@ -88,8 +100,8 @@ const AuthenticatedApp = () => {
       return { type: 'story-reading', storyId: storyReadingMatch[1], chapterIndex }
     }
 
-    // Default to upload for any other path (including /)
-    return { type: 'upload' }
+    // Default to explore for any other path (including /)
+    return { type: 'explore' }
   }
 
   // Render current route
@@ -103,6 +115,7 @@ const AuthenticatedApp = () => {
 
       case 'stories':
       case 'story-editor':
+      case 'chapter-editor':
       case 'story-reading':
         return <MyStoriesPage
           onNavigateToUpload={() => navigate({ type: 'upload' })}

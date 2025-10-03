@@ -45,4 +45,10 @@ export interface IAnchorRepository {
    * @returns Array of anchors ordered by paragraph index
    */
   getByChapterId(chapter_id: string): Promise<Anchor[]>;
+
+  /**
+   * Delete all anchors for a chapter
+   * @param chapter_id - The chapter ID
+   */
+  deleteByChapterId(chapter_id: string): Promise<void>;
 }

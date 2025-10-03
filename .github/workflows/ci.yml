@@ -1,0 +1,192 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Run linting
+        run: cd frontend && npm run lint
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Run build
+        run: cd frontend && npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_KEY }}
+
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Run unit tests
+        run: cd frontend && npm run test:run
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_KEY }}
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: unit-test-results
+          path: frontend/test-results/
+          retention-days: 7
+
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Start Supabase local development environment
+        run: |
+          echo "Starting Supabase local development environment..."
+          timeout 300 supabase start || (echo "Supabase start timed out after 5 minutes" && exit 1)
+
+          echo "Waiting for Supabase services to be ready..."
+          sleep 10
+
+          echo "Setting up edge functions for local development..."
+
+          echo "Ensuring edge functions are available..."
+          ls -la supabase/functions/ || echo "Functions directory not found"
+
+          echo "Starting edge functions server with environment variables..."
+          export CI=true
+          export SUPABASE_URL=http://127.0.0.1:54321
+          export SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+          export SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+          export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
+          supabase functions serve --no-verify-jwt &
+          FUNCTIONS_PID=$!
+
+          echo "Waiting for edge functions server to initialize..."
+          sleep 20
+
+          echo "Checking edge functions readiness..."
+          for i in {1..15}; do
+            echo "Checking edge functions... attempt $i/15"
+
+            if pgrep -f "deno.*functions" > /dev/null; then
+              echo "✅ Deno functions process is running"
+            else
+              echo "⚠️  No deno functions process found"
+            fi
+
+            RESPONSE=$(curl -s -w "%{http_code}" -o /dev/null \
+              -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0" \
+              http://127.0.0.1:54321/functions/v1 2>/dev/null || echo "curl_failed")
+            echo "Edge function response code: $RESPONSE"
+
+            if [[ "$RESPONSE" =~ ^[0-9]+$ ]] && [ "$RESPONSE" -ne 502 ] && [ "$RESPONSE" -ne 503 ] && [ "$RESPONSE" -ne 000 ]; then
+              echo "✅ Edge functions are responding (status: $RESPONSE)"
+              break
+            fi
+
+            if [ $i -eq 15 ]; then
+              echo "❌ Edge functions failed to start after 15 attempts"
+              echo "Process check:"
+              pgrep -af "supabase\|deno" || echo "No Supabase/Deno processes found"
+              echo "Port check:"
+              netstat -tlnp 2>/dev/null | grep 54321 || echo "Port 54321 not bound"
+              echo "Attempting to restart functions server..."
+              export CI=true
+              export SUPABASE_URL=http://127.0.0.1:54321
+              export SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+              export SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+              export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
+              supabase functions serve --no-verify-jwt &
+              sleep 10
+            fi
+            sleep 3
+          done
+
+          echo "Testing storage connectivity..."
+          STORAGE_TEST=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/storage/v1/bucket 2>/dev/null || echo "storage_failed")
+          if [[ "$STORAGE_TEST" =~ ^[0-9]+$ ]]; then
+            echo "✅ Storage API is accessible (status: $STORAGE_TEST)"
+          else
+            echo "⚠️  Storage API not responding: $STORAGE_TEST"
+          fi
+
+          echo "✅ Supabase with edge functions is ready!"
+
+      - name: Run integration tests
+        run: |
+          cd frontend
+          echo "Running integration tests with full Supabase stack..."
+          npm run test:integration
+        env:
+          VITE_SUPABASE_URL: http://127.0.0.1:54321
+          VITE_SUPABASE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+          SUPABASE_URL: http://127.0.0.1:54321
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+          SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+          VITE_FUNCTIONS_URL: http://127.0.0.1:54321/functions/v1
+          RUN_INTEGRATION_TESTS: true
+          CI: true
+          NODE_ENV: test
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: integration-test-results
+          path: frontend/test-results/
+          retention-days: 7

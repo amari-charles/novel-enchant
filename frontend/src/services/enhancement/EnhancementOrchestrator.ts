@@ -70,6 +70,23 @@ export class EnhancementOrchestrator implements IEnhancementService {
   }
 
   /**
+   * Re-enhance a chapter by deleting existing enhancements and regenerating
+   * @param chapterId - The ID of the chapter to re-enhance
+   */
+  async reEnhanceChapter(chapterId: string): Promise<void> {
+    console.log('[EnhancementOrchestrator] Starting reEnhanceChapter for:', chapterId);
+
+    // 1. Delete all existing anchors for this chapter (cascade deletes enhancements)
+    console.log('[EnhancementOrchestrator] Deleting existing anchors and enhancements...');
+    const anchorRepository = this.anchorService['anchorRepository'] as any;
+    await anchorRepository.deleteByChapterId(chapterId);
+    console.log('[EnhancementOrchestrator] Existing enhancements cleared');
+
+    // 2. Call enhance chapter to regenerate
+    await this.enhanceChapter(chapterId);
+  }
+
+  /**
    * Enhance all chapters in a book/story automatically
    * @param storyId - The ID of the story to enhance
    */

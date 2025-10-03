@@ -42,14 +42,16 @@ interface ChapterListPageProps {
   storyId: string;
   chapterId?: string;
   onBack: () => void;
-  onNavigate?: (chapterId: string) => void;
+  onNavigateToChapter?: (chapterId: string) => void;
 }
 
 type View = 'chapter-list' | 'chapter-editor';
 
 export const ChapterListPage: React.FC<ChapterListPageProps> = ({
   storyId,
+  chapterId,
   onBack,
+  onNavigateToChapter,
 }) => {
   const { user } = useAuth();
   const [story, setStory] = useState<Story | null>(null);
@@ -147,8 +149,14 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
   }, [loadStory]);
 
   const handleEditChapter = (chapterId: string) => {
-    setSelectedChapterId(chapterId);
-    setCurrentView('chapter-editor');
+    if (onNavigateToChapter) {
+      // Use routing if available
+      onNavigateToChapter(chapterId);
+    } else {
+      // Fallback to internal state
+      setSelectedChapterId(chapterId);
+      setCurrentView('chapter-editor');
+    }
   };
 
   const handleBackToChapterList = () => {
@@ -190,7 +198,11 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
       return;
     }
 
-    console.log('Starting enhancement for chapter:', chapterId);
+    // Check if chapter is already enhanced
+    const chapter = chapters.find(ch => ch.id === chapterId);
+    const isReEnhancement = chapter?.stats.isEnhanced;
+
+    console.log(`Starting ${isReEnhancement ? 're-' : ''}enhancement for chapter:`, chapterId);
 
     try {
       setError(null);
@@ -201,8 +213,13 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
       const orchestrator = createEnhancementOrchestrator(user.id);
 
       // Start the enhancement process
-      console.log('Starting enhancement process...');
-      await orchestrator.enhanceChapter(chapterId);
+      if (isReEnhancement) {
+        console.log('Starting re-enhancement process...');
+        await orchestrator.reEnhanceChapter(chapterId);
+      } else {
+        console.log('Starting enhancement process...');
+        await orchestrator.enhanceChapter(chapterId);
+      }
 
       console.log('Enhancement completed, reloading story...');
       // Reload story to show updated enhancement status
@@ -210,8 +227,8 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
 
       console.log('Story reloaded successfully');
     } catch (error) {
-      console.error('Failed to enhance chapter:', error);
-      setError(`Failed to enhance chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(`Failed to ${isReEnhancement ? 're-' : ''}enhance chapter:`, error);
+      setError(`Failed to ${isReEnhancement ? 're-' : ''}enhance chapter: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setEnhancingChapterId(null);
     }
@@ -237,23 +254,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <svg className="animate-spin w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 4.708L4 12z"></path>
-            </svg>
-          </div>
-          <p className="text-muted-foreground">Loading story...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !story) {
+  if (error && !story) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -267,16 +268,17 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
     );
   }
 
-  // Chapter Editor View
-  if (currentView === 'chapter-editor' && selectedChapterId && story) {
-    const selectedChapter = chapters.find(ch => ch.id === selectedChapterId);
+  // Chapter Editor View - check both route param and internal state
+  const activeChapterId = chapterId || selectedChapterId;
+  if ((currentView === 'chapter-editor' || chapterId) && activeChapterId && story) {
+    const selectedChapter = chapters.find(ch => ch.id === activeChapterId);
 
     if (!selectedChapter) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-foreground mb-2">Chapter not found</h2>
-            <button onClick={handleBackToChapterList} className="btn-primary">
+            <button onClick={chapterId ? onBack : handleBackToChapterList} className="btn-primary">
               Back to Chapters
             </button>
           </div>
@@ -287,7 +289,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
     return (
       <ChapterWorkspace
         chapterId={selectedChapter.id}
-        onBack={handleBackToChapterList}
+        onBack={chapterId ? onBack : handleBackToChapterList}
       />
     );
   }
@@ -309,22 +311,26 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
               </svg>
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{story.title}</h1>
-              <p className="text-muted-foreground">
-                {chapters.length} chapters • Last updated {new Date(story.updated_at).toLocaleDateString()}
-              </p>
+              <h1 className="text-2xl font-bold text-foreground">{story?.title || 'Loading...'}</h1>
+              {story && (
+                <p className="text-muted-foreground">
+                  {chapters.length} chapters • Last updated {new Date(story.updated_at).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </div>
 
-          <button
-            onClick={handleAddChapter}
-            className="btn-primary"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Chapter
-          </button>
+          {story && (
+            <button
+              onClick={handleAddChapter}
+              className="btn-primary"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Chapter
+            </button>
+          )}
         </div>
 
         {/* Error Display */}
@@ -363,7 +369,7 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
             />
           ))}
 
-          {chapters.length === 0 && (
+          {!isLoading && chapters.length === 0 && (
             <div className="text-center py-12">
               <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,12 +378,14 @@ export const ChapterListPage: React.FC<ChapterListPageProps> = ({
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">No chapters yet</h3>
               <p className="text-muted-foreground mb-4">Add your first chapter to get started</p>
-              <button
-                onClick={handleAddChapter}
-                className="btn-primary"
-              >
-                Add First Chapter
-              </button>
+              {story && (
+                <button
+                  onClick={handleAddChapter}
+                  className="btn-primary"
+                >
+                  Add First Chapter
+                </button>
+              )}
             </div>
           )}
         </div>

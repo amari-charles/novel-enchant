@@ -83,7 +83,8 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
       node.__enhancementId,
       node.__imageUrl,
       node.__onRetry,
-      node.__onDelete
+      node.__onDelete,
+      node.__key
     );
   }
 
