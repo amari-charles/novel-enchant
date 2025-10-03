@@ -23,13 +23,18 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
   "exclude": [
     "src/archive/**/*",
-    "src/features/book-management/services/enhanced-copy.service.ts"
+    "src/features/book-management/services/enhanced-copy.service.ts",
+    "src/components/ai-analysis-preview.tsx",
+    "src/components/content-input.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

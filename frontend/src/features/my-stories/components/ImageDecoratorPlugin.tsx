@@ -51,6 +51,7 @@ export function ImageDecoratorPlugin({
               const nodes = editor.getEditorState()._nodeMap;
               const imageNode = nodes.get(nodeKey);
               if (imageNode && $isImageNode(imageNode)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const enhancementId = (imageNode as any).__enhancementId;
                 if (enhancementId && existingImageNodes.has(enhancementId)) {
                   existingImageNodes.delete(enhancementId);
@@ -61,6 +62,7 @@ export function ImageDecoratorPlugin({
               const nodes = editor.getEditorState()._nodeMap;
               const imageNode = nodes.get(nodeKey);
               if (imageNode && $isImageNode(imageNode)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const enhancementId = (imageNode as any).__enhancementId;
                 if (enhancementId) {
                   existingImageNodes.add(enhancementId);

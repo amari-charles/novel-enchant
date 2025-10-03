@@ -46,21 +46,25 @@ function InitialContentPlugin({ content }: { content: string }) {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    editor.update(() => {
-      const root = $getRoot();
+    // Use queueMicrotask to defer the update until after React finishes rendering
+    queueMicrotask(() => {
+      editor.update(() => {
+        const root = $getRoot();
 
-      // Clear existing content
-      root.clear();
+        // Clear existing content
+        root.clear();
 
-      // Split content into paragraphs and create paragraph nodes
-      const paragraphs = content.split('\n');
-      paragraphs.forEach(para => {
-        const paragraphNode = $createParagraphNode();
-        const textNode = $createTextNode(para);
-        paragraphNode.append(textNode);
-        root.append(paragraphNode);
+        // Split content into paragraphs and create paragraph nodes
+        const paragraphs = content.split('\n');
+        paragraphs.forEach(para => {
+          const paragraphNode = $createParagraphNode();
+          const textNode = $createTextNode(para);
+          paragraphNode.append(textNode);
+          root.append(paragraphNode);
+        });
       });
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   return null;

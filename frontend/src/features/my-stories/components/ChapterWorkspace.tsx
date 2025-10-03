@@ -33,7 +33,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [anchors, setAnchors] = useState<Anchor[]>([]);
   const [enhancements, setEnhancements] = useState<EnhancementWithMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -187,6 +187,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleManualSave]);
 
   // Font preference handler
@@ -242,7 +243,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
       const anchorRepository = new AnchorRepository();
 
       // Get current paragraph count from content
-      const paragraphs = content.split('\n');
+      // const paragraphs = content.split('\n');
 
       // Update anchors that are now beyond the paragraph count
       const updatedAnchors = await Promise.all(
@@ -270,23 +271,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
     ? 'font-serif'
     : 'font-sans';
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <svg className="animate-spin w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 4.708L4 12z"></path>
-            </svg>
-          </div>
-          <p className="text-muted-foreground">Loading chapter...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !chapter) {
+  if (error && !chapter) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -295,6 +280,29 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
           <button onClick={onBack} className="btn-primary">
             Back
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!chapter) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-5xl mx-auto px-6 py-6">
+          <div className="flex items-center gap-3 mb-8">
+            <button
+              onClick={onBack}
+              className="text-muted-foreground hover:text-foreground transition-colors p-2"
+              aria-label="Back to chapters"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading chapter...</p>
+          </div>
         </div>
       </div>
     );
@@ -410,7 +418,8 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
             title={title}
             content={content}
             anchors={anchors}
-            enhancements={enhancements}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            enhancements={enhancements as any}
             fontClass={fontClass}
             onTitleChange={setTitle}
             onContentChange={setContent}
@@ -423,7 +432,8 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
             title={title}
             content={content}
             anchors={anchors}
-            enhancements={enhancements}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            enhancements={enhancements as any}
             fontClass={fontClass}
           />
         )}

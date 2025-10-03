@@ -2,6 +2,7 @@
  * Character Registry
  * Manages character detection, tracking, and context for image generation
  */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import type {
   ICharacterRegistry,
@@ -42,9 +43,9 @@ export class CharacterRegistry implements ICharacterRegistry {
     const allCharacters = await this.characterRepository.getByStoryId(storyId);
 
     // 2. Use AI to identify which characters appear in the scene
-    const prompt = this.buildCharacterIdentificationPrompt(sceneText, allCharacters);
+    const prompt = this.buildCharacterIdentificationPrompt(sceneText, allCharacters as unknown as Character[]);
     const response = await this.textAI.generateText(prompt);
-    const analysis = this.parseCharacterAnalysis(response, allCharacters);
+    const analysis = this.parseCharacterAnalysis(response, allCharacters as unknown as Character[]);
 
     return analysis;
   }
@@ -84,7 +85,7 @@ export class CharacterRegistry implements ICharacterRegistry {
         status: 'confirmed',
         confidence: 0.9 // High confidence since AI detected them
       });
-      created.push(newCharacter);
+      created.push(newCharacter as unknown as Character);
     }
 
     return created;

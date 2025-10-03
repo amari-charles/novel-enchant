@@ -5,7 +5,6 @@
 
 import type { IEnhancementService } from './IEnhancementService';
 import type { IChapterRepository } from './repositories/IChapterRepository';
-import type { IStoryRepository } from './repositories/IStoryRepository';
 import type { IAnchorService } from './IAnchorService';
 import type { IEnhancementRepository } from './repositories/IEnhancementRepository';
 import type { ISceneSelector } from './ISceneSelector';
@@ -15,7 +14,6 @@ import type { IImageStorage } from './IImageStorage';
 export class EnhancementOrchestrator implements IEnhancementService {
   constructor(
     private chapterRepository: IChapterRepository,
-    private storyRepository: IStoryRepository,
     private anchorService: IAnchorService,
     private enhancementRepository: IEnhancementRepository,
     private sceneSelector: ISceneSelector,
@@ -70,6 +68,22 @@ export class EnhancementOrchestrator implements IEnhancementService {
   }
 
   /**
+   * Re-enhance a chapter by deleting existing enhancements and regenerating
+   * @param chapterId - The ID of the chapter to re-enhance
+   */
+  async reEnhanceChapter(chapterId: string): Promise<void> {
+    console.log('[EnhancementOrchestrator] Starting reEnhanceChapter for:', chapterId);
+
+    // 1. Delete all existing anchors for this chapter (cascade deletes enhancements)
+    console.log('[EnhancementOrchestrator] Deleting existing anchors and enhancements...');
+    await this.anchorService.deleteByChapterId(chapterId);
+    console.log('[EnhancementOrchestrator] Existing enhancements cleared');
+
+    // 2. Call enhance chapter to regenerate
+    await this.enhanceChapter(chapterId);
+  }
+
+  /**
    * Enhance all chapters in a book/story automatically
    * @param storyId - The ID of the story to enhance
    */
@@ -116,7 +130,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
       contextText,
       chapterId,
       afterParagraphIndex,
-      chapter.style_preferences as ImageStyle | undefined
+      undefined // TODO: Get style preferences from chapter or story
     );
 
     return anchorId;
@@ -166,6 +180,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
         prompt: generatedImage.prompt,
         generatedAt: generatedImage.metadata?.generatedAt as string | undefined,
         provider: generatedImage.metadata?.provider as string | undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
     });
 
@@ -224,6 +239,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
           prompt: generatedImage.prompt,
           generatedAt: generatedImage.metadata?.generatedAt as string | undefined,
           provider: generatedImage.metadata?.provider as string | undefined
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any
       });
 

@@ -508,6 +508,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
-export type { Database };
 export type SupabaseClient = ReturnType<typeof createClient<Database>>;
 

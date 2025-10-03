@@ -16,6 +16,16 @@ import { AnchorRepository } from '@/services/enhancement/repositories/AnchorRepo
 import { EnhancementRepository } from '@/services/enhancement/repositories/EnhancementRepository';
 import type { Story as DBStory } from '@/services/enhancement/repositories/IStoryRepository';
 import type { Chapter as DBChapter } from '@/services/enhancement/repositories/IChapterRepository';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Button } from '@/components/ui/button';
+import { LayoutGrid, List, Plus } from 'lucide-react';
 
 // UI types (extends DB types)
 interface StoryStats {
@@ -40,7 +50,8 @@ interface Chapter extends DBChapter {
 
 type Route =
   | { type: 'stories' }
-  | { type: 'story-editor'; storyId: string; chapterId?: string }
+  | { type: 'story-editor'; storyId: string }
+  | { type: 'chapter-editor'; storyId: string; chapterId: string }
   | { type: 'story-reading'; storyId: string; chapterIndex?: number }
 
 interface MyStoriesPageProps {
@@ -208,11 +219,29 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
     return (
       <ChapterListPage
         storyId={currentRoute.storyId}
-        chapterId={currentRoute.chapterId}
         onBack={handleBackToList}
-        onNavigate={(chapterId) => {
+        onNavigateToChapter={(chapterId) => {
           if (onNavigate) {
-            onNavigate({ type: 'story-editor', storyId: currentRoute.storyId, chapterId });
+            onNavigate({ type: 'chapter-editor', storyId: currentRoute.storyId, chapterId });
+          }
+        }}
+      />
+    );
+  }
+
+  if (currentRoute?.type === 'chapter-editor') {
+    return (
+      <ChapterListPage
+        storyId={currentRoute.storyId}
+        chapterId={currentRoute.chapterId}
+        onBack={() => {
+          if (onNavigate) {
+            onNavigate({ type: 'story-editor', storyId: currentRoute.storyId });
+          }
+        }}
+        onNavigateToChapter={(chapterId) => {
+          if (onNavigate) {
+            onNavigate({ type: 'chapter-editor', storyId: currentRoute.storyId, chapterId });
           }
         }}
       />
@@ -224,7 +253,8 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
     if (story) {
       return (
         <ReadingView
-          story={story}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          story={story as any}
           onBack={handleBackToList}
         />
       );
@@ -244,7 +274,8 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
 
           <div className="flex items-center space-x-4">
             {/* Upload New Story Button */}
-            <button
+            <Button
+              variant="secondary"
               onClick={() => {
                 if (onNavigateToUpload) {
                   onNavigateToUpload();
@@ -252,41 +283,33 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
                   onNavigate({ type: 'upload' });
                 }
               }}
-              className="btn-primary"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
+              <Plus className="h-4 w-4 mr-2" />
               Upload New Story
-            </button>
+            </Button>
 
             {/* Filter */}
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as 'all' | 'draft' | 'partial' | 'complete')}
-              className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
-            >
-              <option value="all">All Stories</option>
-              <option value="draft">Drafts</option>
-              <option value="partial">Partially Enhanced</option>
-              <option value="complete">Fully Enhanced</option>
-            </select>
+            <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as 'all' | 'draft' | 'partial' | 'complete')}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter stories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stories</SelectItem>
+                <SelectItem value="draft">Drafts</SelectItem>
+                <SelectItem value="partial">Partially Enhanced</SelectItem>
+                <SelectItem value="complete">Fully Enhanced</SelectItem>
+              </SelectContent>
+            </Select>
 
             {/* View Mode Toggle */}
-            <div className="flex bg-muted rounded-lg p-1">
-              <button
-                onClick={() => setDisplayMode('grid')}
-                className={displayMode === 'grid' ? 'btn-primary btn-sm' : 'btn-ghost btn-sm'}
-              >
-                Grid
-              </button>
-              <button
-                onClick={() => setDisplayMode('list')}
-                className={displayMode === 'list' ? 'btn-primary btn-sm' : 'btn-ghost btn-sm'}
-              >
-                List
-              </button>
-            </div>
+            <ToggleGroup type="single" value={displayMode} onValueChange={(value) => value && setDisplayMode(value as 'grid' | 'list')}>
+              <ToggleGroupItem value="grid" aria-label="Grid view">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List view">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
         </div>
 
@@ -302,21 +325,8 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
           </div>
         )}
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center py-16">
-            <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <svg className="animate-spin w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 4.708L4 12z"></path>
-              </svg>
-            </div>
-            <p className="text-muted-foreground">Loading your stories...</p>
-          </div>
-        )}
-
         {/* Empty State */}
-        {!isLoading && filteredStories.length === 0 && (
+        {filteredStories.length === 0 && !isLoading && (
           <div className="text-center py-16">
             <div className="w-20 h-20 mx-auto bg-muted rounded-full flex items-center justify-center mb-4">
               <svg className="w-10 h-10 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -350,7 +360,7 @@ export const MyStoriesPage: React.FC<MyStoriesPageProps> = ({
         )}
 
         {/* Stories Grid/List */}
-        {!isLoading && filteredStories.length > 0 && (
+        {filteredStories.length > 0 && (
           <div className={displayMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
             {filteredStories.map((story) => (
               <StoryCard

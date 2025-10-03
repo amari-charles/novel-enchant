@@ -5,10 +5,6 @@
 
 import {
   DecoratorNode,
-  type DOMConversionMap,
-  type DOMConversionOutput,
-  type DOMExportOutput,
-  type EditorConfig,
   type LexicalNode,
   type NodeKey,
   type SerializedLexicalNode,
@@ -101,7 +97,7 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
     this.__onDelete = onDelete;
   }
 
-  createDOM(_config: EditorConfig): HTMLElement {
+  createDOM(): HTMLElement {
     const div = document.createElement('div');
     div.className = 'image-decorator-wrapper';
     return div;

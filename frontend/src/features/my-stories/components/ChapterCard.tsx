@@ -3,7 +3,7 @@
  * Display for individual chapters in story editor
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Chapter {
   id: string;
@@ -45,7 +45,40 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
   onDelete
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const isComplete = stats.isEnhanced && stats.totalScenes > 0 && stats.acceptedScenes === stats.totalScenes;
+
+  // Initialize progress state - if already complete on mount, start hidden
+  const [progressState, setProgressState] = useState<'showing' | 'celebrating' | 'hidden'>(() => {
+    return isComplete ? 'hidden' : 'showing';
+  });
+
+  const [previousAcceptedScenes, setPreviousAcceptedScenes] = useState(stats.acceptedScenes);
   const previewImage = chapter.scenes?.find(s => s.image_url)?.image_url;
+
+  // Handle completion animation - only trigger when completion happens during this session
+  useEffect(() => {
+    // Check if we just completed (acceptedScenes increased and now equals totalScenes)
+    const justCompleted =
+      stats.acceptedScenes > previousAcceptedScenes &&
+      isComplete &&
+      progressState === 'showing';
+
+    if (justCompleted) {
+      // Start celebrating
+      setProgressState('celebrating');
+
+      // After 2 seconds, hide the progress bar
+      const timer = setTimeout(() => {
+        setProgressState('hidden');
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+
+    // Update previous count
+    setPreviousAcceptedScenes(stats.acceptedScenes);
+  }, [stats.acceptedScenes, isComplete, previousAcceptedScenes, progressState]);
 
   return (
     <div
@@ -67,7 +100,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
             {chapter.title || `Chapter ${chapter.order_index + 1}`}
           </h3>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground mb-2">
             <span>
               {stats.isEnhanced
                 ? `${stats.totalScenes} scenes • ${stats.acceptedScenes} enhanced`
@@ -76,13 +109,44 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
             </span>
             {stats.isEnhanced && (
               <>
-                <span>•</span>
+                <span className="mx-2">•</span>
                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
                   Enhanced
                 </span>
               </>
             )}
           </div>
+
+          {/* Scene Enhancement Progress Bar */}
+          {stats.isEnhanced && stats.totalScenes > 0 && progressState !== 'hidden' && (
+            <div
+              className={`transition-all duration-500 ${
+                progressState === 'celebrating' ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                {progressState === 'celebrating' ? (
+                  <div className="flex items-center gap-1 text-green-600 font-medium animate-in fade-in zoom-in duration-300">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Complete!</span>
+                  </div>
+                ) : (
+                  <>
+                    <span>Scene Progress</span>
+                    <span>{Math.round((stats.acceptedScenes / stats.totalScenes) * 100)}%</span>
+                  </>
+                )}
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(stats.acceptedScenes / stats.totalScenes) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right side: Image and menu button - stays together */}
@@ -92,7 +156,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
             <img
               src={previewImage}
               alt={chapter.title || 'Scene preview'}
-              className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+              className="w-20 h-20 rounded-md object-cover flex-shrink-0"
             />
           )}
 
@@ -131,7 +195,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
                   >
-                    Enhance Chapter
+                    {stats.isEnhanced ? 'Re-Enhance' : 'Auto-Enhance'}
                   </button>
                   <button
                     onClick={(e) => {

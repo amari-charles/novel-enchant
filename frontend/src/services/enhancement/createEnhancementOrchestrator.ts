@@ -5,7 +5,6 @@
 
 import { EnhancementOrchestrator } from './EnhancementOrchestrator';
 import { ChapterRepository } from './repositories/ChapterRepository';
-import { StoryRepository } from './repositories/StoryRepository';
 import { AnchorRepository } from './repositories/AnchorRepository';
 import { EnhancementRepository } from './repositories/EnhancementRepository';
 import { CharacterRepository } from './repositories/CharacterRepository';
@@ -16,7 +15,6 @@ import { ImageGenerator } from './ImageGenerator';
 import { ImageStorage } from './ImageStorage';
 import { CharacterRegistry } from './CharacterRegistry';
 import { StubImageAIClient } from './StubImageAIClient';
-import { StubTextAIClient } from './StubTextAIClient';
 import { OpenAITextAIClient } from './OpenAITextAIClient';
 import { MediaRepository } from './repositories/MediaRepository';
 
@@ -28,7 +26,6 @@ import { MediaRepository } from './repositories/MediaRepository';
 export function createEnhancementOrchestrator(userId: string): EnhancementOrchestrator {
   // Instantiate repositories
   const chapterRepository = new ChapterRepository();
-  const storyRepository = new StoryRepository();
   const anchorRepository = new AnchorRepository();
   const enhancementRepository = new EnhancementRepository();
   const characterRepository = new CharacterRepository();
@@ -49,7 +46,6 @@ export function createEnhancementOrchestrator(userId: string): EnhancementOrches
   // Create and return the orchestrator
   return new EnhancementOrchestrator(
     chapterRepository,
-    storyRepository,
     anchorService,
     enhancementRepository,
     sceneSelector,

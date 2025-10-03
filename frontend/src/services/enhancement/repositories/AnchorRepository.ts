@@ -77,4 +77,15 @@ export class AnchorRepository implements IAnchorRepository {
 
     return data;
   }
+
+  async deleteByChapterId(chapter_id: string): Promise<void> {
+    const { error } = await supabase
+      .from('anchors')
+      .delete()
+      .eq('chapter_id', chapter_id);
+
+    if (error) {
+      throw new Error(`Failed to delete anchors by chapter: ${error.message}`);
+    }
+  }
 }

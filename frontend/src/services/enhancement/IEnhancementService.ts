@@ -11,6 +11,12 @@ export interface IEnhancementService {
   enhanceChapter(chapterId: string): Promise<void>;
 
   /**
+   * Re-enhance a chapter by deleting existing enhancements and regenerating
+   * @param chapterId - The ID of the chapter to re-enhance
+   */
+  reEnhanceChapter(chapterId: string): Promise<void>;
+
+  /**
    * Enhance all chapters in a book/story automatically
    * @param storyId - The ID of the story to enhance
    */

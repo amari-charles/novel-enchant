@@ -44,29 +44,12 @@ export const StoryCard: React.FC<StoryCardProps> = ({
   stats,
   statusBadge,
   onEdit,
-  onRead,
   onDelete
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getProgressPercentage = () => {
-    if (stats.totalChapters === 0) return 0;
-    return Math.round((stats.enhancedChapters / stats.totalChapters) * 100);
-  };
-
   const getProgressText = () => {
-    if (story.status === 'draft') {
-      return `${stats.totalChapters} chapter${stats.totalChapters !== 1 ? 's' : ''} • Not enhanced`;
-    }
-    return `${stats.enhancedChapters}/${stats.totalChapters} chapters enhanced • ${stats.acceptedScenes} scenes`;
+    return `${stats.totalChapters} chapter${stats.totalChapters !== 1 ? 's' : ''}`;
   };
 
   if (displayMode === 'list') {
@@ -92,8 +75,6 @@ export const StoryCard: React.FC<StoryCardProps> = ({
 
             <div className="text-sm text-muted-foreground mb-2">
               <span>{getProgressText()}</span>
-              <span className="mx-2">•</span>
-              <span>Updated {formatDate(story.updated_at)}</span>
             </div>
 
             {story.status !== 'draft' && (
@@ -242,25 +223,9 @@ export const StoryCard: React.FC<StoryCardProps> = ({
         </div>
 
         <div className="mb-4">
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className="text-sm text-muted-foreground">
             {getProgressText()}
           </p>
-
-          {/* Progress Bar */}
-          {story.status !== 'draft' && (
-            <div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>Enhancement Progress</span>
-                <span>{getProgressPercentage()}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${getProgressPercentage()}%` }}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Tags */}
@@ -281,26 +246,6 @@ export const StoryCard: React.FC<StoryCardProps> = ({
             )}
           </div>
         )}
-
-        {/* Action Buttons */}
-        {stats.totalChapters > 0 && (
-          <div className="flex items-center justify-end">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRead(0);
-              }}
-              className="btn-ghost btn-sm"
-              aria-label="Read story"
-            >
-              Read
-            </button>
-          </div>
-        )}
-
-        <div className="text-xs text-muted-foreground mt-3">
-          Updated {formatDate(story.updated_at)}
-        </div>
       </div>
     </div>
   );
