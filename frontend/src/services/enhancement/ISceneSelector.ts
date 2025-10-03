@@ -9,10 +9,8 @@
 export interface SelectedScene {
   /** The text content of the selected scene */
   sceneText: string;
-  /** The starting position of the scene within the source text */
-  startPosition: number;
-  /** The ending position of the scene within the source text */
-  endPosition: number;
+  /** The paragraph index after which this scene ends (where the image should be placed) */
+  afterParagraphIndex: number;
 }
 
 /**

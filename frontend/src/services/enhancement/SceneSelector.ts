@@ -75,7 +75,7 @@ ${text}`;
    * Parse AI response into structured scene objects
    * @param response - Raw AI response (expected to be JSON)
    * @param originalText - Original chapter text to find positions
-   * @returns Array of selected scenes with positions
+   * @returns Array of selected scenes with paragraph indices
    */
   private parseSceneResponse(response: string, originalText: string): SelectedScene[] {
     try {
@@ -92,15 +92,23 @@ ${text}`;
       const parsed = JSON.parse(cleanedResponse);
       const scenes: SelectedScene[] = [];
 
+      // Split text into paragraphs
+      const paragraphs = originalText.split('\n');
+
       for (const scene of parsed.scenes || []) {
         const sceneText = scene.text;
         const startPosition = originalText.indexOf(sceneText);
 
         if (startPosition !== -1) {
+          // Find which paragraph this scene ends in
+          const afterParagraphIndex = this.findParagraphIndexForPosition(
+            startPosition + sceneText.length,
+            paragraphs
+          );
+
           scenes.push({
             sceneText,
-            startPosition,
-            endPosition: startPosition + sceneText.length
+            afterParagraphIndex
           });
         }
       }
@@ -111,6 +119,26 @@ ${text}`;
       console.error('Response was:', response);
       throw new Error(`Failed to parse scene extraction response: ${error}`);
     }
+  }
+
+  /**
+   * Find which paragraph a character position falls into
+   * @param position - Character position in text
+   * @param paragraphs - Array of paragraphs
+   * @returns The paragraph index (0-based)
+   */
+  private findParagraphIndexForPosition(position: number, paragraphs: string[]): number {
+    let currentPosition = 0;
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      currentPosition += paragraphs[i].length + 1; // +1 for newline
+      if (currentPosition >= position) {
+        return i;
+      }
+    }
+
+    // If position is beyond all text, return last paragraph
+    return Math.max(0, paragraphs.length - 1);
   }
 }
 

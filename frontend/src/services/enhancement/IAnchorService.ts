@@ -9,20 +9,20 @@
 export interface Anchor {
   id: string;
   chapter_id: string;
-  position: number;
-  active_image_id: string | null;
+  after_paragraph_index: number;
+  active_enhancement_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface IAnchorService {
   /**
-   * Create a new anchor at a specific position in a chapter
+   * Create a new anchor after a specific paragraph in a chapter
    * @param chapterId - The chapter ID
-   * @param position - The position in the chapter text
+   * @param afterParagraphIndex - The paragraph index after which the anchor is placed
    * @returns The created anchor
    */
-  createAnchor(chapterId: string, position: number): Promise<Anchor>;
+  createAnchor(chapterId: string, afterParagraphIndex: number): Promise<Anchor>;
 
   /**
    * Get an anchor by ID
@@ -32,19 +32,19 @@ export interface IAnchorService {
   getAnchor(anchorId: string): Promise<Anchor | null>;
 
   /**
-   * Update the active image for an anchor
+   * Update the active enhancement for an anchor
    * @param anchorId - The anchor ID
-   * @param imageId - The image ID to set as active
+   * @param enhancementId - The enhancement ID to set as active
    */
-  updateActiveImage(anchorId: string, imageId: string): Promise<void>;
+  updateActiveEnhancement(anchorId: string, enhancementId: string): Promise<void>;
 
   /**
-   * Validate that a position is valid within a chapter
+   * Validate that a paragraph index is valid within a chapter
    * @param chapterId - The chapter ID
-   * @param position - The position to validate
-   * @returns True if position is valid, false otherwise
+   * @param afterParagraphIndex - The paragraph index to validate
+   * @returns True if paragraph index is valid, false otherwise
    */
-  validatePosition(chapterId: string, position: number): Promise<boolean>;
+  validateParagraphIndex(chapterId: string, afterParagraphIndex: number): Promise<boolean>;
 
   /**
    * Get all anchors for a chapter

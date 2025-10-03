@@ -42,7 +42,7 @@ export interface IAnchorRepository {
   /**
    * Get all anchors for a chapter
    * @param chapter_id - The chapter ID
-   * @returns Array of anchors ordered by position
+   * @returns Array of anchors ordered by paragraph index
    */
   getByChapterId(chapter_id: string): Promise<Anchor[]>;
 }

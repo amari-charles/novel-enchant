@@ -69,7 +69,7 @@ export class AnchorRepository implements IAnchorRepository {
       .from('anchors')
       .select('*')
       .eq('chapter_id', chapter_id)
-      .order('position', { ascending: true });
+      .order('after_paragraph_index', { ascending: true });
 
     if (error) {
       throw new Error(`Failed to get anchors by chapter: ${error.message}`);

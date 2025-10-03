@@ -203,8 +203,65 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
   };
 
   const handleDeleteEnhancement = async (enhancementId: string) => {
-    // TODO: Implement delete logic
-    console.log('Delete enhancement:', enhancementId);
+    try {
+      const enhancementRepository = new EnhancementRepository();
+      const anchorRepository = new AnchorRepository();
+      const mediaRepository = new MediaRepository();
+
+      // Find the enhancement to get its anchor_id and media_id
+      const enhancement = enhancements.find(e => e.id === enhancementId);
+      if (!enhancement) {
+        console.error('Enhancement not found:', enhancementId);
+        return;
+      }
+
+      // Delete media file if it exists
+      if (enhancement.media_id) {
+        await mediaRepository.delete(enhancement.media_id);
+      }
+
+      // Delete the enhancement record
+      await enhancementRepository.delete(enhancementId);
+
+      // Delete the associated anchor
+      await anchorRepository.delete(enhancement.anchor_id);
+
+      // Update local state
+      setEnhancements(prev => prev.filter(e => e.id !== enhancementId));
+      setAnchors(prev => prev.filter(a => a.id !== enhancement.anchor_id));
+    } catch (error) {
+      console.error('Failed to delete enhancement:', error);
+    }
+  };
+
+  const handleParagraphCountChange = async (newCount: number, oldCount: number) => {
+    // Only reindex if paragraphs were deleted
+    if (newCount >= oldCount) return;
+
+    try {
+      const anchorRepository = new AnchorRepository();
+
+      // Get current paragraph count from content
+      const paragraphs = content.split('\n');
+
+      // Update anchors that are now beyond the paragraph count
+      const updatedAnchors = await Promise.all(
+        anchors.map(async (anchor) => {
+          // If anchor is beyond the new paragraph count, move it to the last paragraph
+          if (anchor.after_paragraph_index >= newCount) {
+            const updated = await anchorRepository.update(anchor.id, {
+              after_paragraph_index: Math.max(0, newCount - 1),
+            });
+            return updated;
+          }
+          return anchor;
+        })
+      );
+
+      setAnchors(updatedAnchors);
+    } catch (error) {
+      console.error('Failed to reindex anchors:', error);
+    }
   };
 
   const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
@@ -359,6 +416,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
             onContentChange={setContent}
             onRetryEnhancement={handleRetryEnhancement}
             onDeleteEnhancement={handleDeleteEnhancement}
+            onParagraphCountChange={handleParagraphCountChange}
           />
         ) : (
           <EnhancedTextViewer
