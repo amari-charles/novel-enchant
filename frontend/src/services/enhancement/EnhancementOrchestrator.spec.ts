@@ -55,6 +55,7 @@ describe('EnhancementOrchestrator', () => {
 
     mockImageStorage = {
       uploadImage: vi.fn(),
+      setMediaOwner: vi.fn(),
     } as any;
 
     orchestrator = new EnhancementOrchestrator(
