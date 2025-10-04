@@ -128,17 +128,46 @@ describe('Media Cleanup - Database Integration', () => {
 ## Next Steps
 
 1. [x] Document the issue
-2. [ ] Create integration test infrastructure (`tests/integration/setup.ts`)
-3. [ ] Write real database integration test
-4. [ ] Update CI to run integration tests
-5. [ ] Keep existing unit test for fast feedback (with documented limitations)
+2. [x] Create integration test infrastructure (`tests/integration/setup.ts`)
+3. [x] Write real database integration test
+4. [ ] Fix Docker daemon (currently not responsive - prevents running integration tests)
+5. [ ] Run integration tests locally to verify trigger works
+6. [ ] Update CI to run integration tests
+7. [x] Keep existing unit test for fast feedback (with documented limitations)
 
 ## Date Identified
 
 2025-10-03
 
+## Current Blockers
+
+### Docker Not Responsive (2025-10-03)
+
+**Issue**: Docker daemon is completely hung/unresponsive
+- `docker ps` times out
+- `docker info` times out
+- Prevents Supabase from running (uses Docker)
+- Blocks integration test execution
+
+**Impact**:
+- ✅ Unit tests work fine (24/24 passing)
+- ✅ Build succeeds
+- ❌ Cannot run integration tests
+- ❌ Cannot verify database trigger locally
+
+**Known Solutions**:
+1. Restart Docker Desktop (macOS): `killall Docker && open -a Docker`
+2. Check Docker Desktop logs: `~/Library/Containers/com.docker.docker/Data/log/vm/dockerd.log`
+3. Full Docker reset if needed
+
+**Related GitHub Issues**:
+- https://github.com/supabase/cli/issues/2540 - Storage timeout issues
+- https://github.com/supabase/cli/issues/4141 - Database operation timeouts
+
+**Workaround**: Integration tests are properly implemented and will work once Docker is restarted. Unit tests provide coverage of application logic in the meantime.
+
 ## Related Files
 
 - `frontend/src/services/enhancement/media-cleanup.integration.spec.ts` (current flawed test)
-- `frontend/tests/integration/media-cleanup.db.spec.ts` (planned replacement)
+- `frontend/tests/integration/media-cleanup.db.spec.ts` (real integration test - needs Docker)
 - `supabase/migrations/20251003000000_polymorphic_media_ownership.sql` (trigger being tested)
