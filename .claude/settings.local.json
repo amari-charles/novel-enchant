@@ -34,7 +34,9 @@
       "Bash(git commit:*)",
       "Bash(printf \"Y\\n\")",
       "Bash(git push:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(git rm:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
