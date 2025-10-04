@@ -242,6 +242,8 @@ export type Database = {
           media_type: string
           metadata: Json
           mime_type: string | null
+          owner_id: string | null
+          owner_type: string | null
           storage_path: string
           updated_at: string
           url: string
@@ -257,6 +259,8 @@ export type Database = {
           media_type: string
           metadata?: Json
           mime_type?: string | null
+          owner_id?: string | null
+          owner_type?: string | null
           storage_path: string
           updated_at?: string
           url: string
@@ -272,6 +276,8 @@ export type Database = {
           media_type?: string
           metadata?: Json
           mime_type?: string | null
+          owner_id?: string | null
+          owner_type?: string | null
           storage_path?: string
           updated_at?: string
           url?: string

@@ -4,7 +4,7 @@
  * Keeps storage bucket and media table in sync
  */
 
-import type { IImageStorage } from './IImageStorage';
+import type { IImageStorage, MediaOwnerType } from './IImageStorage';
 import type { IMediaRepository } from './repositories/IMediaRepository';
 import { supabase } from '../../lib/supabase';
 
@@ -24,9 +24,16 @@ export class ImageStorage implements IImageStorage {
    * Upload an image to storage and create media record
    * @param imageBlob - The image file/blob to upload
    * @param path - The storage path (e.g., "enhancements/{chapterId}/{anchorId}.png")
+   * @param ownerType - Optional type of entity that owns this media
+   * @param ownerId - Optional ID of the owning entity
    * @returns Object containing storage path and media ID
    */
-  async uploadImage(imageBlob: Blob | File, path: string): Promise<{
+  async uploadImage(
+    imageBlob: Blob | File,
+    path: string,
+    ownerType?: MediaOwnerType,
+    ownerId?: string
+  ): Promise<{
     storagePath: string;
     mediaId: string;
   }> {
@@ -55,13 +62,32 @@ export class ImageStorage implements IImageStorage {
       media_type: 'image',
       file_size: imageBlob.size,
       mime_type: imageBlob.type || 'image/png',
-      metadata: {}
+      metadata: {},
+      owner_type: ownerType,
+      owner_id: ownerId
     });
 
     return {
       storagePath: data.path,
       mediaId: media.id
     };
+  }
+
+  /**
+   * Update the owner of a media record
+   * @param mediaId - The media ID to update
+   * @param ownerType - Type of entity that owns this media
+   * @param ownerId - ID of the owning entity
+   */
+  async setMediaOwner(
+    mediaId: string,
+    ownerType: MediaOwnerType,
+    ownerId: string
+  ): Promise<void> {
+    await this.mediaRepository.update(mediaId, {
+      owner_type: ownerType,
+      owner_id: ownerId
+    });
   }
 
   /**

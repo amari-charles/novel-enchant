@@ -184,7 +184,10 @@ export class EnhancementOrchestrator implements IEnhancementService {
       } as any
     });
 
-    // 7. Update anchor's active enhancement
+    // 7. Set media owner to this enhancement
+    await this.imageStorage.setMediaOwner(mediaId, 'enhancement', enhancement.id);
+
+    // 8. Update anchor's active enhancement
     await this.anchorService.updateActiveEnhancement(anchorId, enhancement.id);
   }
 
@@ -243,7 +246,10 @@ export class EnhancementOrchestrator implements IEnhancementService {
         } as any
       });
 
-      // 7. Update anchor with active enhancement
+      // 7. Set media owner to this enhancement
+      await this.imageStorage.setMediaOwner(mediaId, 'enhancement', enhancement.id);
+
+      // 8. Update anchor with active enhancement
       await this.anchorService.updateActiveEnhancement(anchor.id, enhancement.id);
 
       return anchor.id;
