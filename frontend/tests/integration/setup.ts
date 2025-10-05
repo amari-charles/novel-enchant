@@ -48,27 +48,41 @@ export function getTestSupabaseAdminClient(): SupabaseClient<Database> {
 }
 
 /**
- * Create a test user for integration tests
+ * Get or create a test user for integration tests
+ * Uses existing test user from environment variables
  * Returns user ID and auth session
+ *
+ * @param client - Optional Supabase client to authenticate (recommended for tests)
+ * @param email - Optional email override
+ * @param password - Optional password override
  */
 export async function createTestUser(
+  client?: SupabaseClient<Database>,
   email?: string,
-  password: string = 'test-password-123'
+  password?: string
 ): Promise<{ userId: string; session: any }> {
-  const client = getTestSupabaseClient();
-  const testEmail = email || `test-${Date.now()}@example.com`;
+  const authClient = client || getTestSupabaseClient();
+  const testEmail = email || process.env.TEST_USER_EMAIL;
+  const testPassword = password || process.env.TEST_USER_PASSWORD;
 
-  const { data, error } = await client.auth.signUp({
+  if (!testEmail || !testPassword) {
+    throw new Error(
+      'Missing test user credentials. Set TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables.'
+    );
+  }
+
+  // Try to sign in with existing user
+  const { data, error } = await authClient.auth.signInWithPassword({
     email: testEmail,
-    password,
+    password: testPassword,
   });
 
   if (error) {
-    throw new Error(`Failed to create test user: ${error.message}`);
+    throw new Error(`Failed to sign in test user: ${error.message}`);
   }
 
   if (!data.user) {
-    throw new Error('Failed to create test user: No user returned');
+    throw new Error('Failed to sign in test user: No user returned');
   }
 
   return {
@@ -79,16 +93,47 @@ export async function createTestUser(
 
 /**
  * Clean up test data for a specific user
- * Cascading deletes will remove all related data
+ * Deletes all stories and related data, but keeps the user account
+ * Also cleans up old test data (created more than 1 hour ago)
  */
 export async function cleanupTestUser(userId: string): Promise<void> {
-  const adminClient = getTestSupabaseAdminClient();
+  const client = getTestSupabaseClient();
 
-  // Delete user (cascades to stories, chapters, anchors, enhancements, media)
-  const { error } = await adminClient.auth.admin.deleteUser(userId);
+  // Delete all stories for this user (cascades to chapters, anchors, enhancements, media)
+  const { error } = await client
+    .from('stories')
+    .delete()
+    .eq('user_id', userId);
 
   if (error) {
-    console.error(`Failed to cleanup test user ${userId}:`, error);
+    console.error(`Failed to cleanup test data for user ${userId}:`, error);
+  }
+}
+
+/**
+ * Clean up stale test data (older than 1 hour)
+ * Should be run periodically to prevent test data accumulation
+ */
+export async function cleanupStaleTestData(): Promise<void> {
+  const client = getTestSupabaseClient();
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+  // Get current test user
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) {
+    console.warn('No authenticated user, skipping stale data cleanup');
+    return;
+  }
+
+  // Delete old stories from test user (cascades to all related data)
+  const { error } = await client
+    .from('stories')
+    .delete()
+    .eq('user_id', user.id)
+    .lt('created_at', oneHourAgo);
+
+  if (error) {
+    console.error('Failed to cleanup stale test data:', error);
   }
 }
 

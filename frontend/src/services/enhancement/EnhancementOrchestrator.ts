@@ -3,6 +3,7 @@
  * Oversees the entire enhancement flow for chapters and books
  */
 
+import { supabase } from '../../lib/supabase';
 import type { IEnhancementService } from './IEnhancementService';
 import type { IChapterRepository } from './repositories/IChapterRepository';
 import type { IAnchorService } from './IAnchorService';
@@ -154,8 +155,8 @@ export class EnhancementOrchestrator implements IEnhancementService {
       throw new Error(`Chapter not found: ${anchor.chapter_id}`);
     }
 
-    // 3. Generate image from selection
-    const generatedImage = await this.promptBuilder.generateImageFromScene(
+    // 3. Generate image from selection with character tracking
+    const { image: generatedImage, characterIds } = await this.promptBuilder.generateImageFromScene(
       selection,
       undefined,
       chapter.story_id
@@ -165,8 +166,19 @@ export class EnhancementOrchestrator implements IEnhancementService {
     const response = await fetch(generatedImage.imageUrl);
     const imageBlob = await response.blob();
 
-    // 5. Upload to storage and create media record
-    const storagePath = `enhancements/${anchor.chapter_id}/${anchorId}_${Date.now()}.png`;
+    // 5. Get user ID from story for storage path
+    const { data: story } = await supabase
+      .from('stories')
+      .select('user_id')
+      .eq('id', chapter.story_id)
+      .single();
+
+    if (!story) {
+      throw new Error(`Story not found: ${chapter.story_id}`);
+    }
+
+    // 6. Upload to storage and create media record (user-based folder structure)
+    const storagePath = `${story.user_id}/${anchor.chapter_id}/${anchorId}_${Date.now()}.png`;
     const { mediaId } = await this.imageStorage.uploadImage(imageBlob, storagePath);
 
     // 6. Create enhancement record
@@ -184,10 +196,27 @@ export class EnhancementOrchestrator implements IEnhancementService {
       } as any
     });
 
-    // 7. Set media owner to this enhancement
+    // 7. Link characters to this enhancement
+    if (characterIds.length > 0) {
+      const { error: linkError } = await supabase
+        .from('enhancement_characters')
+        .insert(
+          characterIds.map(characterId => ({
+            enhancement_id: enhancement.id,
+            character_id: characterId
+          }))
+        );
+
+      if (linkError) {
+        console.error('[EnhancementOrchestrator] Failed to link characters to enhancement:', linkError);
+        // Don't fail the whole operation - character linking is supplementary
+      }
+    }
+
+    // 8. Set media owner to this enhancement
     await this.imageStorage.setMediaOwner(mediaId, 'enhancement', enhancement.id);
 
-    // 8. Update anchor's active enhancement
+    // 9. Update anchor's active enhancement
     await this.anchorService.updateActiveEnhancement(anchorId, enhancement.id);
   }
 
@@ -217,7 +246,7 @@ export class EnhancementOrchestrator implements IEnhancementService {
 
     try {
       // 3. Generate image from scene with character consistency
-      const generatedImage = await this.promptBuilder.generateImageFromScene(
+      const { image: generatedImage, characterIds } = await this.promptBuilder.generateImageFromScene(
         sceneText,
         style,
         chapter.story_id // Pass story ID for character tracking
@@ -227,11 +256,22 @@ export class EnhancementOrchestrator implements IEnhancementService {
       const response = await fetch(generatedImage.imageUrl);
       const imageBlob = await response.blob();
 
-      // 5. Upload to storage and create media record
-      const storagePath = `enhancements/${chapterId}/${anchor.id}_${Date.now()}.png`;
-      const { mediaId } = await this.imageStorage.uploadImage(imageBlob, storagePath);
+      // 5. Get user ID from story for storage path
+      const { data: story } = await supabase
+        .from('stories')
+        .select('user_id')
+        .eq('id', chapter.story_id)
+        .single();
 
-      // 6. Create enhancement record
+      if (!story) {
+        throw new Error(`Story not found: ${chapter.story_id}`);
+      }
+
+      // 6. Upload to storage and create media record (user-based folder structure)
+      const storagePath = `${story.user_id}/${chapterId}/${anchor.id}_${Date.now()}.png`;
+      const { mediaId} = await this.imageStorage.uploadImage(imageBlob, storagePath);
+
+      // 7. Create enhancement record
       const enhancement = await this.enhancementRepository.create({
         anchor_id: anchor.id,
         chapter_id: chapterId,
@@ -246,10 +286,27 @@ export class EnhancementOrchestrator implements IEnhancementService {
         } as any
       });
 
-      // 7. Set media owner to this enhancement
+      // 7. Link characters to this enhancement
+      if (characterIds.length > 0) {
+        const { error: linkError } = await supabase
+          .from('enhancement_characters')
+          .insert(
+            characterIds.map(characterId => ({
+              enhancement_id: enhancement.id,
+              character_id: characterId
+            }))
+          );
+
+        if (linkError) {
+          console.error('[EnhancementOrchestrator] Failed to link characters to enhancement:', linkError);
+          // Don't fail the whole operation - character linking is supplementary
+        }
+      }
+
+      // 8. Set media owner to this enhancement
       await this.imageStorage.setMediaOwner(mediaId, 'enhancement', enhancement.id);
 
-      // 8. Update anchor with active enhancement
+      // 9. Update anchor with active enhancement
       await this.anchorService.updateActiveEnhancement(anchor.id, enhancement.id);
 
       return anchor.id;

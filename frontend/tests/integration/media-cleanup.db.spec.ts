@@ -13,6 +13,7 @@ import {
   getTestSupabaseClient,
   createTestUser,
   cleanupTestUser,
+  cleanupStaleTestData,
   withTestTransaction,
 } from './setup';
 
@@ -23,13 +24,16 @@ describe('Media Cleanup - Database Integration', () => {
   beforeAll(async () => {
     client = getTestSupabaseClient();
 
-    // Create a test user for all tests
-    const { userId } = await createTestUser();
+    // Sign in as test user for all tests (authenticate this client instance)
+    const { userId } = await createTestUser(client);
     testUserId = userId;
+
+    // Clean up any stale test data from previous runs
+    await cleanupStaleTestData();
   });
 
   afterAll(async () => {
-    // Cleanup test user and all related data
+    // Cleanup test data (but keep user account for reuse)
     await cleanupTestUser(testUserId);
   });
 
