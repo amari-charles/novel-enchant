@@ -60,7 +60,7 @@ export async function createTestUser(
   client?: SupabaseClient<Database>,
   email?: string,
   password?: string
-): Promise<{ userId: string; session: any }> {
+): Promise<{ userId: string; session: unknown }> {
   const authClient = client || getTestSupabaseClient();
   const testEmail = email || process.env.TEST_USER_EMAIL;
   const testPassword = password || process.env.TEST_USER_PASSWORD;

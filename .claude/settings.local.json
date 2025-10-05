@@ -67,7 +67,8 @@
       "Bash(timeout 20 npm run test:integration -- storage-bucket --reporter=verbose)",
       "WebFetch(domain:supabase-sql.vercel.app)",
       "WebFetch(domain:github.com)",
-      "Bash(supabase status:*)"
+      "Bash(supabase status:*)",
+      "Bash(MSYS_NO_PATHCONV=1 supabase db reset)"
     ],
     "deny": [],
     "ask": []

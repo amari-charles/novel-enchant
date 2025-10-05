@@ -242,8 +242,6 @@ export type Database = {
           media_type: string
           metadata: Json
           mime_type: string | null
-          owner_id: string | null
-          owner_type: string | null
           storage_path: string
           updated_at: string
           url: string
@@ -259,8 +257,6 @@ export type Database = {
           media_type: string
           metadata?: Json
           mime_type?: string | null
-          owner_id?: string | null
-          owner_type?: string | null
           storage_path: string
           updated_at?: string
           url: string
@@ -276,8 +272,6 @@ export type Database = {
           media_type?: string
           metadata?: Json
           mime_type?: string | null
-          owner_id?: string | null
-          owner_type?: string | null
           storage_path?: string
           updated_at?: string
           url?: string
@@ -504,6 +498,7 @@ export const Constants = {
   },
 } as const
 
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -515,4 +510,3 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 export type SupabaseClient = ReturnType<typeof createClient<Database>>;
-
