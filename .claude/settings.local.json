@@ -73,7 +73,8 @@
       "Bash(MSYS_NO_PATHCONV=1 npx supabase db dump --data-only --schema storage -t buckets --local)",
       "Bash(gh pr view:*)",
       "Bash(git fetch:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(npm run test:run:*)"
     ],
     "deny": [],
     "ask": []
