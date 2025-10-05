@@ -95,8 +95,10 @@ jobs:
         with:
           version: latest
 
-      - name: Start Supabase local instance
-        run: supabase start
+      - name: Start Supabase and export credentials
+        run: |
+          supabase start
+          supabase status -o env >> $GITHUB_ENV
 
       - name: Run database migrations
         run: supabase db push
@@ -104,8 +106,8 @@ jobs:
       - name: Run integration tests
         run: cd frontend && npm run test:integration
         env:
-          VITE_SUPABASE_URL: http://127.0.0.1:54321
-          VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+          VITE_SUPABASE_URL: ${{ env.API_URL }}
+          SUPABASE_ANON_KEY: ${{ env.ANON_KEY }}
           TEST_USER_EMAIL: integration-test@novelenchant.com
           TEST_USER_PASSWORD: integration-test-password-123
 
