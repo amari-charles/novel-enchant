@@ -1,0 +1,412 @@
+
+> novel-enchant@0.0.0 test:integration
+> vitest run --config vitest.integration.config.ts
+
+[dotenv@17.2.3] injecting env (10) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Users/Amari/Code/novel-enchant/frontend[39m
+
+[90mstderr[2m | tests/integration/enhancement-lifecycle.db.spec.ts[2m > [22m[2mEnhancement Lifecycle - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/media-cleanup.db.spec.ts[2m > [22m[2mMedia Cleanup - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/cascade-deletes.db.spec.ts[2m > [22m[2mCascade Deletes - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/rls-policies.db.spec.ts[2m > [22m[2mRLS Policies - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/anchor-management.db.spec.ts[2m > [22m[2mAnchor Management - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/storage-bucket.db.spec.ts[2m > [22m[2mStorage Bucket - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/character-discovery.db.spec.ts[2m > [22m[2mCharacter Discovery - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/anchor-management.db.spec.ts[2m > [22m[2mAnchor Management - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+ [32m✓[39m tests/integration/anchor-management.db.spec.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 4263[2mms[22m[39m
+   [33m[2m✓[22m[39m Anchor Management - Database Integration[2m > [22mcreates anchor at specific text position [33m 460[2mms[22m[39m
+   [33m[2m✓[22m[39m Anchor Management - Database Integration[2m > [22mvalidates anchor position is non-negative [33m 305[2mms[22m[39m
+   [33m[2m✓[22m[39m Anchor Management - Database Integration[2m > [22mmaintains anchor ordering within chapter [33m 723[2mms[22m[39m
+   [33m[2m✓[22m[39m Anchor Management - Database Integration[2m > [22mcascade deletes anchors when chapter is deleted [33m 488[2mms[22m[39m
+   [33m[2m✓[22m[39m Anchor Management - Database Integration[2m > [22manchor persists through chapter text updates [33m 490[2mms[22m[39m
+[90mstderr[2m | tests/integration/character-discovery.db.spec.ts[2m > [22m[2mCharacter Discovery - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+ [31m❯[39m tests/integration/character-discovery.db.spec.ts [2m([22m[2m6 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 5024[2mms[22m[39m
+   [32m✓[39m Character Discovery - Database Integration[2m > [22mstores discovered characters in database[32m 290[2mms[22m[39m
+[31m   [31m×[31m Character Discovery - Database Integration[2m > [22massociates characters with enhancements[39m[33m 1179[2mms[22m[39m
+[31m     → expected { code: 'PGRST205', …(3) } to be null[39m
+[31m   [31m×[31m Character Discovery - Database Integration[2m > [22mcascade deletes character associations when enhancement is deleted[39m[33m 942[2mms[22m[39m
+[31m     → Target cannot be null or undefined.[39m
+   [33m[2m✓[22m[39m Character Discovery - Database Integration[2m > [22mcascade deletes characters when story is deleted [33m 424[2mms[22m[39m
+   [32m✓[39m Character Discovery - Database Integration[2m > [22mallows duplicate character names in different stories[32m 298[2mms[22m[39m
+   [33m[2m✓[22m[39m Character Discovery - Database Integration[2m > [22mupdates character details [33m 404[2mms[22m[39m
+[90mstderr[2m | tests/integration/rls-policies.db.spec.ts[2m > [22m[2mRLS Policies - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+[90mstderr[2m | tests/integration/cascade-deletes.db.spec.ts[2m > [22m[2mCascade Deletes - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+ [31m❯[39m tests/integration/rls-policies.db.spec.ts [2m([22m[2m7 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 5187[2mms[22m[39m
+   [33m[2m✓[22m[39m RLS Policies - Database Integration[2m > [22mallows user to create and read their own stories [33m 604[2mms[22m[39m
+   [32m✓[39m RLS Policies - Database Integration[2m > [22mprevents user from accessing other users stories[32m 295[2mms[22m[39m
+   [33m[2m✓[22m[39m RLS Policies - Database Integration[2m > [22menforces RLS on chapters table [33m 814[2mms[22m[39m
+   [33m[2m✓[22m[39m RLS Policies - Database Integration[2m > [22menforces RLS on characters table [33m 495[2mms[22m[39m
+   [33m[2m✓[22m[39m RLS Policies - Database Integration[2m > [22menforces RLS on anchors and enhancements [33m 576[2mms[22m[39m
+[31m   [31m×[31m RLS Policies - Database Integration[2m > [22mallows authenticated users to access media table[39m[32m 290[2mms[22m[39m
+[31m     → expected { code: 'PGRST204', …(3) } to be null[39m
+[31m   [31m×[31m RLS Policies - Database Integration[2m > [22menforces RLS on enhancement_characters junction table[39m[33m 675[2mms[22m[39m
+[31m     → expected { code: 'PGRST205', …(3) } to be null[39m
+ [31m❯[39m tests/integration/cascade-deletes.db.spec.ts [2m([22m[2m6 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 5230[2mms[22m[39m
+   [33m[2m✓[22m[39m Cascade Deletes - Database Integration[2m > [22mdeleting story cascades to chapters [33m 499[2mms[22m[39m
+[31m   [31m×[31m Cascade Deletes - Database Integration[2m > [22mdeleting chapter cascades to anchors[39m[33m 347[2mms[22m[39m
+[31m     → Target cannot be null or undefined.[39m
+   [33m[2m✓[22m[39m Cascade Deletes - Database Integration[2m > [22mdeleting anchor cascades to enhancements [33m 1237[2mms[22m[39m
+[31m   [31m×[31m Cascade Deletes - Database Integration[2m > [22mdeleting enhancement cascades to enhancement_characters[39m[33m 812[2mms[22m[39m
+[31m     → Target cannot be null or undefined.[39m
+[31m   [31m×[31m Cascade Deletes - Database Integration[2m > [22mdeleting story cascades through entire hierarchy[39m[33m 490[2mms[22m[39m
+[31m     → chapter is not defined[39m
+[31m   [31m×[31m Cascade Deletes - Database Integration[2m > [22mdeleting enhancement with owned media cascades to media via trigger[39m[33m 415[2mms[22m[39m
+[31m     → Cannot read properties of null (reading 'id')[39m
+[90mstderr[2m | tests/integration/enhancement-lifecycle.db.spec.ts[2m > [22m[2mEnhancement Lifecycle - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+ [31m❯[39m tests/integration/enhancement-lifecycle.db.spec.ts [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 5581[2mms[22m[39m
+   [33m[2m✓[22m[39m Enhancement Lifecycle - Database Integration[2m > [22mcreates enhancement with media ownership [33m 895[2mms[22m[39m
+   [33m[2m✓[22m[39m Enhancement Lifecycle - Database Integration[2m > [22mupdates enhancement status [33m 1067[2mms[22m[39m
+[31m   [31m×[31m Enhancement Lifecycle - Database Integration[2m > [22mretry enhancement by deleting and creating new one[39m[33m 1091[2mms[22m[39m
+[31m     → expected [] to have a length of 1 but got +0[39m
+   [33m[2m✓[22m[39m Enhancement Lifecycle - Database Integration[2m > [22mcascade deletes enhancement when anchor is deleted [33m 725[2mms[22m[39m
+[31m   [31m×[31m Enhancement Lifecycle - Database Integration[2m > [22mallows multiple enhancements per anchor[39m[33m 484[2mms[22m[39m
+[31m     → Cannot read properties of null (reading 'id')[39m
+[90mstderr[2m | tests/integration/media-cleanup.db.spec.ts[2m > [22m[2mMedia Cleanup - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+ [31m❯[39m tests/integration/media-cleanup.db.spec.ts [2m([22m[2m4 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 5773[2mms[22m[39m
+   [33m[2m✓[22m[39m Media Cleanup - Database Integration[2m > [22mdatabase trigger deletes media when enhancement is deleted [33m 1623[2mms[22m[39m
+[31m   [31m×[31m Media Cleanup - Database Integration[2m > [22mdatabase trigger only deletes media owned by deleted enhancement[39m[33m 1378[2mms[22m[39m
+[31m     → expected [] to have a length of 1 but got +0[39m
+   [33m[2m✓[22m[39m Media Cleanup - Database Integration[2m > [22mcascade delete from anchor deletes enhancements and media [33m 1001[2mms[22m[39m
+[31m   [31m×[31m Media Cleanup - Database Integration[2m > [22mmedia without ownership is not deleted[39m[33m 396[2mms[22m[39m
+[31m     → Cannot read properties of null (reading 'id')[39m
+[90mstderr[2m | tests/integration/storage-bucket.db.spec.ts[2m > [22m[2mStorage Bucket - Database Integration
+[22m[39mMultiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+
+ [31m❯[39m tests/integration/storage-bucket.db.spec.ts [2m([22m[2m6 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 108958[2mms[22m[39m
+[31m   [31m×[31m Storage Bucket - Database Integration[2m > [22muploads image to enhancements bucket[39m[33m 15035[2mms[22m[39m
+[31m     → expected StorageUnknownError: fetch failed { …(2) } to be null[39m
+   [33m[2m✓[22m[39m Storage Bucket - Database Integration[2m > [22mgenerates public URL for uploaded image [33m 15655[2mms[22m[39m
+[31m   [31m×[31m Storage Bucket - Database Integration[2m > [22mdeletes image from storage when media record is deleted[39m[33m 15403[2mms[22m[39m
+[31m     → expected [] to have a length of 1 but got +0[39m
+   [33m[2m✓[22m[39m Storage Bucket - Database Integration[2m > [22mhandles storage with media ownership flow [33m 16246[2mms[22m[39m
+[31m   [31m×[31m Storage Bucket - Database Integration[2m > [22menforces storage bucket RLS policies[39m[33m 15008[2mms[22m[39m
+[31m     → expected StorageUnknownError: fetch failed { …(2) } to be null[39m
+[31m   [31m×[31m Storage Bucket - Database Integration[2m > [22mlists files in enhancements bucket[39m[33m 30007[2mms[22m[39m
+[31m     → Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 16 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/cascade-deletes.db.spec.ts[2m > [22mCascade Deletes - Database Integration[2m > [22mdeleting chapter cascades to anchors
+[31m[1mAssertionError[22m: Target cannot be null or undefined.[39m
+[36m [2m❯[22m tests/integration/cascade-deletes.db.spec.ts:[2m112:21[22m[39m
+    [90m110| [39m      [33m.[39m[34mselect[39m()[33m;[39m
+    [90m111| [39m
+    [90m112| [39m    [34mexpect[39m(anchors)[33m.[39m[34mtoHaveLength[39m([34m2[39m)[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m113| [39m
+    [90m114| [39m    [35mconst[39m anchorIds [33m=[39m anchors[33m![39m[33m.[39m[34mmap[39m((a) [33m=>[39m a[33m.[39mid)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/cascade-deletes.db.spec.ts[2m > [22mCascade Deletes - Database Integration[2m > [22mdeleting enhancement cascades to enhancement_characters
+[31m[1mAssertionError[22m: Target cannot be null or undefined.[39m
+[36m [2m❯[22m tests/integration/cascade-deletes.db.spec.ts:[2m302:29[22m[39m
+    [90m300| [39m      [33m.[39m[34meq[39m([32m'enhancement_id'[39m[33m,[39m enhancement[33m![39m[33m.[39mid)[33m;[39m
+    [90m301| [39m
+    [90m302| [39m    [34mexpect[39m(junctionsBefore)[33m.[39m[34mtoHaveLength[39m([34m2[39m)[33m;[39m
+    [90m   | [39m                            [31m^[39m
+    [90m303| [39m
+    [90m304| [39m    [90m// 4. Delete enhancement[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/cascade-deletes.db.spec.ts[2m > [22mCascade Deletes - Database Integration[2m > [22mdeleting story cascades through entire hierarchy
+[31m[1mReferenceError[22m: chapter is not defined[39m
+[36m [2m❯[22m tests/integration/cascade-deletes.db.spec.ts:[2m392:23[22m[39m
+    [90m390| [39m      [33m.[39m[34minsert[39m([
+    [90m391| [39m        {
+    [90m392| [39m          chapter_id[33m:[39m chapter[33m![39m[33m.[39mid[33m,[39m
+    [90m   | [39m                      [31m^[39m
+    [90m393| [39m          anchor_id[33m:[39m anchors[33m![39m[[34m0[39m][33m.[39mid[33m,[39m
+    [90m394| [39m          media_id[33m:[39m media[33m![39m[[34m0[39m][33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/cascade-deletes.db.spec.ts[2m > [22mCascade Deletes - Database Integration[2m > [22mdeleting enhancement with owned media cascades to media via trigger
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'id')[39m
+[36m [2m❯[22m tests/integration/cascade-deletes.db.spec.ts:[2m508:28[22m[39m
+    [90m506| [39m      [33m.[39m[35mfrom[39m([32m'enhancements'[39m)
+    [90m507| [39m      [33m.[39m[34minsert[39m({
+    [90m508| [39m        anchor_id[33m:[39m anchor[33m![39m[33m.[39mid[33m,[39m
+    [90m   | [39m                           [31m^[39m
+    [90m509| [39m        chapter_id[33m:[39m chapter[33m![39m[33m.[39mid[33m,[39m
+    [90m510| [39m        media_id[33m:[39m media[33m![39m[33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/character-discovery.db.spec.ts[2m > [22mCharacter Discovery - Database Integration[2m > [22massociates characters with enhancements
+[31m[1mAssertionError[22m: expected { code: 'PGRST205', …(3) } to be null[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+{
+  "code": "PGRST205",
+  "details": null,
+  "hint": "Perhaps you meant the table 'public.enhancements'",
+  "message": "Could not find the table 'public.enhancement_characters' in the schema cache",
+}
+
+[36m [2m❯[22m tests/integration/character-discovery.db.spec.ts:[2m166:30[22m[39m
+    [90m164| [39m      ])[33m;[39m
+    [90m165| [39m
+    [90m166| [39m    [34mexpect[39m(associationError)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m   | [39m                             [31m^[39m
+    [90m167| [39m
+    [90m168| [39m    [90m// 5. Verify associations[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/character-discovery.db.spec.ts[2m > [22mCharacter Discovery - Database Integration[2m > [22mcascade deletes character associations when enhancement is deleted
+[31m[1mAssertionError[22m: Target cannot be null or undefined.[39m
+[36m [2m❯[22m tests/integration/character-discovery.db.spec.ts:[2m264:33[22m[39m
+    [90m262| [39m      [33m.[39m[34meq[39m([32m'enhancement_id'[39m[33m,[39m enhancement[33m![39m[33m.[39mid)[33m;[39m
+    [90m263| [39m
+    [90m264| [39m    [34mexpect[39m(deletedAssociations)[33m.[39m[34mtoHaveLength[39m([34m0[39m)[33m;[39m
+    [90m   | [39m                                [31m^[39m
+    [90m265| [39m
+    [90m266| [39m    [90m// 6. Verify character still exists (not cascade deleted)[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/enhancement-lifecycle.db.spec.ts[2m > [22mEnhancement Lifecycle - Database Integration[2m > [22mretry enhancement by deleting and creating new one
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m tests/integration/enhancement-lifecycle.db.spec.ts:[2m313:32[22m[39m
+    [90m311| [39m      [33m.[39m[34meq[39m([32m'anchor_id'[39m[33m,[39m anchor[33m![39m[33m.[39mid)[33m;[39m
+    [90m312| [39m
+    [90m313| [39m    [34mexpect[39m(anchorEnhancements)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m
+    [90m   | [39m                               [31m^[39m
+    [90m314| [39m    [34mexpect[39m(anchorEnhancements[33m![39m[[34m0[39m][33m.[39mid)[33m.[39m[34mtoBe[39m(enhancement2[33m![39m[33m.[39mid)[33m;[39m
+    [90m315| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/enhancement-lifecycle.db.spec.ts[2m > [22mEnhancement Lifecycle - Database Integration[2m > [22mallows multiple enhancements per anchor
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'id')[39m
+[36m [2m❯[22m tests/integration/enhancement-lifecycle.db.spec.ts:[2m447:28[22m[39m
+    [90m445| [39m    [35mawait[39m client[33m.[39m[35mfrom[39m([32m'enhancements'[39m)[33m.[39m[34minsert[39m([
+    [90m446| [39m      {
+    [90m447| [39m        anchor_id[33m:[39m anchor[33m![39m[33m.[39mid[33m,[39m
+    [90m   | [39m                           [31m^[39m
+    [90m448| [39m        chapter_id[33m:[39m chapter[33m![39m[33m.[39mid[33m,[39m
+    [90m449| [39m        enhancement_type[33m:[39m [32m'ai_image'[39m[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/media-cleanup.db.spec.ts[2m > [22mMedia Cleanup - Database Integration[2m > [22mdatabase trigger only deletes media owned by deleted enhancement
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m tests/integration/media-cleanup.db.spec.ts:[2m271:25[22m[39m
+    [90m269| [39m
+    [90m270| [39m    [34mexpect[39m(media1After)[33m.[39m[34mtoHaveLength[39m([34m0[39m)[33m;[39m [90m// Deleted[39m
+    [90m271| [39m    [34mexpect[39m(media2After)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m [90m// Still exists[39m
+    [90m   | [39m                        [31m^[39m
+    [90m272| [39m  })[33m;[39m
+    [90m273| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/media-cleanup.db.spec.ts[2m > [22mMedia Cleanup - Database Integration[2m > [22mmedia without ownership is not deleted
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'id')[39m
+[36m [2m❯[22m tests/integration/media-cleanup.db.spec.ts:[2m406:28[22m[39m
+    [90m404| [39m      [33m.[39m[35mfrom[39m([32m'enhancements'[39m)
+    [90m405| [39m      [33m.[39m[34minsert[39m({
+    [90m406| [39m        anchor_id[33m:[39m anchor[33m![39m[33m.[39mid[33m,[39m
+    [90m   | [39m                           [31m^[39m
+    [90m407| [39m        chapter_id[33m:[39m chapter[33m![39m[33m.[39mid[33m,[39m
+    [90m408| [39m        enhancement_type[33m:[39m [32m'animation'[39m[33m,[39m [90m// No media needed[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/rls-policies.db.spec.ts[2m > [22mRLS Policies - Database Integration[2m > [22mallows authenticated users to access media table
+[31m[1mAssertionError[22m: expected { code: 'PGRST204', …(3) } to be null[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+{
+  "code": "PGRST204",
+  "details": null,
+  "hint": null,
+  "message": "Could not find the 'alt_text' column of 'media' in the schema cache",
+}
+
+[36m [2m❯[22m tests/integration/rls-policies.db.spec.ts:[2m318:25[22m[39m
+    [90m316| [39m      [33m.[39m[34meq[39m([32m'id'[39m[33m,[39m media[33m![39m[33m.[39mid)[33m;[39m
+    [90m317| [39m
+    [90m318| [39m    [34mexpect[39m(updateError)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m319| [39m
+    [90m320| [39m    [90m// 4. Delete media[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/rls-policies.db.spec.ts[2m > [22mRLS Policies - Database Integration[2m > [22menforces RLS on enhancement_characters junction table
+[31m[1mAssertionError[22m: expected { code: 'PGRST205', …(3) } to be null[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+{
+  "code": "PGRST205",
+  "details": null,
+  "hint": "Perhaps you meant the table 'public.enhancements'",
+  "message": "Could not find the table 'public.enhancement_characters' in the schema cache",
+}
+
+[36m [2m❯[22m tests/integration/rls-policies.db.spec.ts:[2m401:27[22m[39m
+    [90m399| [39m      })[33m;[39m
+    [90m400| [39m
+    [90m401| [39m    [34mexpect[39m(junctionError)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m   | [39m                          [31m^[39m
+    [90m402| [39m
+    [90m403| [39m    [90m// 3. Read junction record[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/storage-bucket.db.spec.ts[2m > [22mStorage Bucket - Database Integration[2m > [22muploads image to enhancements bucket
+[31m[1mAssertionError[22m: expected StorageUnknownError: fetch failed { …(2) } to be null[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+StorageUnknownError {
+  "message": "fetch failed",
+  "__isStorageError": true,
+  "name": "StorageUnknownError",
+  "originalError": TypeError {
+    "message": "fetch failed",
+    "cause": Error {
+      "message": "read ECONNRESET",
+      "errno": -4077,
+      "code": "ECONNRESET",
+      "syscall": "read",
+    },
+  },
+}
+
+[36m [2m❯[22m tests/integration/storage-bucket.db.spec.ts:[2m55:19[22m[39m
+    [90m 53| [39m      [33m.[39m[34mupload[39m(fileName[33m,[39m testImageBlob)[33m;[39m
+    [90m 54| [39m
+    [90m 55| [39m    [34mexpect[39m(error)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m   | [39m                  [31m^[39m
+    [90m 56| [39m    [34mexpect[39m(data)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m 57| [39m    [34mexpect[39m(data[33m![39m[33m.[39mpath)[33m.[39m[34mtoBe[39m(fileName)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/storage-bucket.db.spec.ts[2m > [22mStorage Bucket - Database Integration[2m > [22mdeletes image from storage when media record is deleted
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m tests/integration/storage-bucket.db.spec.ts:[2m116:25[22m[39m
+    [90m114| [39m      [33m.[39m[34mlist[39m([32m''[39m[33m,[39m { search[33m:[39m fileName })[33m;[39m
+    [90m115| [39m
+    [90m116| [39m    [34mexpect[39m(filesBefore)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m117| [39m
+    [90m118| [39m    [90m// 4. Delete media record[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/storage-bucket.db.spec.ts[2m > [22mStorage Bucket - Database Integration[2m > [22menforces storage bucket RLS policies
+[31m[1mAssertionError[22m: expected StorageUnknownError: fetch failed { …(2) } to be null[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+StorageUnknownError {
+  "message": "fetch failed",
+  "__isStorageError": true,
+  "name": "StorageUnknownError",
+  "originalError": TypeError {
+    "message": "fetch failed",
+    "cause": Error {
+      "message": "read ECONNRESET",
+      "errno": -4077,
+      "code": "ECONNRESET",
+      "syscall": "read",
+    },
+  },
+}
+
+[36m [2m❯[22m tests/integration/storage-bucket.db.spec.ts:[2m252:25[22m[39m
+    [90m250| [39m      [33m.[39m[34mupload[39m(fileName[33m,[39m testImageBlob)[33m;[39m
+    [90m251| [39m
+    [90m252| [39m    [34mexpect[39m(uploadError)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m253| [39m
+    [90m254| [39m    [90m// 2. Try to delete with authenticated user (should succeed)[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/storage-bucket.db.spec.ts[2m > [22mStorage Bucket - Database Integration[2m > [22mlists files in enhancements bucket
+[31m[1mError[22m: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m tests/integration/storage-bucket.db.spec.ts:[2m262:3[22m[39m
+    [90m260| [39m  })[33m;[39m
+    [90m261| [39m
+    [90m262| [39m  [34mtest[39m([32m'lists files in enhancements bucket'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m   | [39m  [31m^[39m
+    [90m263| [39m    [90m// 1. Upload multiple test files[39m
+    [90m264| [39m    [35mconst[39m fileNames [33m=[39m [
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[31m16 failed[39m[22m[2m | [22m[1m[32m24 passed[39m[22m[90m (40)[39m
+[2m   Start at [22m 07:00:15
+[2m   Duration [22m 110.66s[2m (transform 239ms, setup 919ms, collect 1.00s, tests 140.02s, environment 7.18s, prepare 1.32s)[22m
+

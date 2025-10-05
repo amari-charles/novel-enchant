@@ -19,6 +19,16 @@ export interface ImageStyle {
   metadata?: Record<string, unknown>;
 }
 
+/**
+ * Result from generating an image from a scene
+ */
+export interface SceneImageResult {
+  /** The generated image with metadata */
+  image: GeneratedImage;
+  /** IDs of characters that appear in this image (for linking to enhancement) */
+  characterIds: string[];
+}
+
 export interface IPromptBuilder {
   /**
    * Build a simple prompt for image generation from a scene
@@ -35,11 +45,11 @@ export interface IPromptBuilder {
    * @param scene - The scene text to generate an image for
    * @param style - Style preferences for the generated image
    * @param storyId - Story ID for character tracking and consistency
-   * @returns Generated image with metadata
+   * @returns Generated image with metadata and character IDs
    */
   generateImageFromScene(
     scene: string,
     style?: ImageStyle,
     storyId?: string
-  ): Promise<GeneratedImage>;
+  ): Promise<SceneImageResult>;
 }

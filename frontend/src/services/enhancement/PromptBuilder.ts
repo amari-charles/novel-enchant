@@ -4,7 +4,7 @@
  * Manages character consistency through the CharacterRegistry
  */
 
-import type { IPromptBuilder, ImageStyle } from './IPromptBuilder';
+import type { IPromptBuilder, ImageStyle, SceneImageResult } from './IPromptBuilder';
 import type { IImageGenerator, GeneratedImage } from './IImageGenerator';
 import type { ICharacterRegistry, SceneCharacterAnalysis, Character } from './ICharacterRegistry';
 
@@ -55,13 +55,13 @@ export class PromptBuilder implements IPromptBuilder {
    * @param scene - The scene text to generate an image for
    * @param style - Style preferences for the generated image
    * @param storyId - Story ID for character consistency (required for character tracking)
-   * @returns Generated image with metadata
+   * @returns Generated image with metadata and character IDs
    */
   async generateImageFromScene(
     scene: string,
     style?: ImageStyle,
     storyId?: string
-  ): Promise<GeneratedImage> {
+  ): Promise<SceneImageResult> {
     // 1. Identify which characters appear in scene (returns IDs only)
     const characterAnalysis = storyId
       ? await this.identifyCharactersInScene(scene, storyId)
@@ -83,12 +83,21 @@ export class PromptBuilder implements IPromptBuilder {
     // 4. Generate image
     const generatedImage = await this.imageGenerator.generateImage(prompt);
 
-    // 5. Register new characters discovered in the scene
-    if (storyId && characterAnalysis?.newCharacters.length) {
-      await this.registerNewCharacters(characterAnalysis.newCharacters, storyId);
-    }
+    // 5. Register new characters discovered in the scene and collect their IDs
+    const newCharacterRecords = storyId && characterAnalysis?.newCharacters.length
+      ? await this.registerNewCharacters(characterAnalysis.newCharacters, storyId)
+      : [];
 
-    return generatedImage;
+    // 6. Combine all character IDs (known + newly registered)
+    const allCharacterIds = [
+      ...(characterAnalysis?.knownCharacterIds || []),
+      ...newCharacterRecords.map(char => char.id)
+    ];
+
+    return {
+      image: generatedImage,
+      characterIds: allCharacterIds
+    };
   }
 
   /**
