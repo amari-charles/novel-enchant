@@ -1,12 +1,7 @@
 -- Create storage bucket for enhancement images
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES (
-  'enhancements',
-  'enhancements',
-  true,
-  10485760, -- 10MB limit
-  ARRAY['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
-)
+-- Note: Bucket settings (public, file_size_limit, allowed_mime_types) are configured in config.toml
+INSERT INTO storage.buckets (id, name)
+VALUES ('enhancements', 'enhancements')
 ON CONFLICT (id) DO NOTHING;
 
 -- Allow authenticated users to upload to their own path

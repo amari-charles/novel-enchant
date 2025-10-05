@@ -168,6 +168,39 @@ export type Database = {
           },
         ]
       }
+      enhancement_characters: {
+        Row: {
+          character_id: string
+          created_at: string
+          enhancement_id: string
+        }
+        Insert: {
+          character_id: string
+          created_at?: string
+          enhancement_id: string
+        }
+        Update: {
+          character_id?: string
+          created_at?: string
+          enhancement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enhancement_characters_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enhancement_characters_enhancement_id_fkey"
+            columns: ["enhancement_id"]
+            isOneToOne: false
+            referencedRelation: "enhancements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enhancements: {
         Row: {
           anchor_id: string
@@ -242,6 +275,8 @@ export type Database = {
           media_type: string
           metadata: Json
           mime_type: string | null
+          owner_id: string | null
+          owner_type: string | null
           storage_path: string
           updated_at: string
           url: string
@@ -257,6 +292,8 @@ export type Database = {
           media_type: string
           metadata?: Json
           mime_type?: string | null
+          owner_id?: string | null
+          owner_type?: string | null
           storage_path: string
           updated_at?: string
           url: string
@@ -272,6 +309,8 @@ export type Database = {
           media_type?: string
           metadata?: Json
           mime_type?: string | null
+          owner_id?: string | null
+          owner_type?: string | null
           storage_path?: string
           updated_at?: string
           url?: string
@@ -510,3 +549,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 export type SupabaseClient = ReturnType<typeof createClient<Database>>;
+

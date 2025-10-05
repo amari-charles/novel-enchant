@@ -68,7 +68,9 @@
       "WebFetch(domain:supabase-sql.vercel.app)",
       "WebFetch(domain:github.com)",
       "Bash(supabase status:*)",
-      "Bash(MSYS_NO_PATHCONV=1 supabase db reset)"
+      "Bash(MSYS_NO_PATHCONV=1 supabase db reset)",
+      "Bash(MSYS_NO_PATHCONV=1 npx supabase db dump --schema storage --local)",
+      "Bash(MSYS_NO_PATHCONV=1 npx supabase db dump --data-only --schema storage -t buckets --local)"
     ],
     "deny": [],
     "ask": []
