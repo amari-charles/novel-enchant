@@ -102,12 +102,13 @@ jobs:
 
       - name: Run integration tests
         run: |
-          export VITE_SUPABASE_URL="${API_URL}"
-          export VITE_SUPABASE_ANON_KEY="${ANON_KEY}"
-          export SUPABASE_SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY}"
-          export TEST_USER_EMAIL="integration-test@novelenchant.com"
-          export TEST_USER_PASSWORD="integration-test-password-123"
-          cd frontend && npm run test:integration
+          cd frontend
+          VITE_SUPABASE_URL="$API_URL" \
+          VITE_SUPABASE_ANON_KEY="$ANON_KEY" \
+          SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" \
+          TEST_USER_EMAIL="integration-test@novelenchant.com" \
+          TEST_USER_PASSWORD="integration-test-password-123" \
+          npm run test:integration
 
       - name: Upload integration test results
         uses: actions/upload-artifact@v4
