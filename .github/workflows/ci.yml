@@ -103,11 +103,11 @@ jobs:
       - name: Run integration tests
         run: |
           cd frontend
-          VITE_SUPABASE_URL="$API_URL" \
-          VITE_SUPABASE_ANON_KEY="$ANON_KEY" \
-          SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" \
-          TEST_USER_EMAIL="integration-test@novelenchant.com" \
-          TEST_USER_PASSWORD="integration-test-password-123" \
+          VITE_SUPABASE_URL=$API_URL \
+          VITE_SUPABASE_ANON_KEY=$ANON_KEY \
+          SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY \
+          TEST_USER_EMAIL=integration-test@novelenchant.com \
+          TEST_USER_PASSWORD=integration-test-password-123 \
           npm run test:integration
 
       - name: Upload integration test results
