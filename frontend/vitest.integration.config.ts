@@ -9,7 +9,8 @@ import path from 'path';
 // Env vars are passed from shell (local .env or CI workflow), not loaded here
 export default defineConfig({
   // Don't load .env files - use environment variables passed from CI or shell
-  envDir: false,
+  // Setting envDir to a non-existent path prevents Vite from loading .env files
+  envDir: '/dev/null',
   plugins: [tailwindcss(), react()],
   resolve: {
     alias: {
