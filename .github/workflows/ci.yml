@@ -101,14 +101,13 @@ jobs:
           supabase status -o env >> $GITHUB_ENV
 
       - name: Run integration tests
-        run: |
-          cd frontend
-          VITE_SUPABASE_URL=$API_URL \
-          VITE_SUPABASE_ANON_KEY=$ANON_KEY \
-          SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY \
-          TEST_USER_EMAIL=integration-test@novelenchant.com \
-          TEST_USER_PASSWORD=integration-test-password-123 \
-          npm run test:integration
+        run: cd frontend && npm run test:integration
+        env:
+          VITE_SUPABASE_URL: ${{ env.API_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ env.ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SERVICE_ROLE_KEY }}
+          TEST_USER_EMAIL: integration-test@novelenchant.com
+          TEST_USER_PASSWORD: integration-test-password-123
 
       - name: Upload integration test results
         uses: actions/upload-artifact@v4
