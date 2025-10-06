@@ -6,11 +6,8 @@ import path from 'path';
 
 // Integration test configuration
 // Runs tests against real Supabase database
-// Env vars are passed from shell (local .env or CI workflow), not loaded here
+// Env vars are passed from CI workflow, not loaded from .env files
 export default defineConfig({
-  // Don't load .env files - use environment variables passed from CI or shell
-  // Setting envDir to a non-existent path prevents Vite from loading .env files
-  envDir: '/dev/null',
   plugins: [tailwindcss(), react()],
   resolve: {
     alias: {

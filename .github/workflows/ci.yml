@@ -95,17 +95,19 @@ jobs:
         with:
           version: latest
 
-      - name: Start Supabase and export credentials
+      - name: Start Supabase local development environment
         run: |
+          echo "Starting Supabase local development environment..."
           supabase start
-          supabase status -o env >> $GITHUB_ENV
+          echo "✅ Supabase is ready!"
 
       - name: Run integration tests
         run: cd frontend && npm run test:integration
         env:
-          VITE_SUPABASE_URL: ${{ env.API_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ env.ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SERVICE_ROLE_KEY }}
+          # Use local Supabase environment variables with standard demo keys
+          VITE_SUPABASE_URL: http://127.0.0.1:54321
+          VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+          SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
           TEST_USER_EMAIL: integration-test@novelenchant.com
           TEST_USER_PASSWORD: integration-test-password-123
 
