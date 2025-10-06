@@ -12,7 +12,14 @@ import type { Database } from '../../src/lib/supabase';
  */
 export function getTestSupabaseClient(): SupabaseClient<Database> {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321';
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.ANON_KEY;
+
+  console.log('[getTestSupabaseClient] VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL);
+  console.log('[getTestSupabaseClient] VITE_SUPABASE_ANON_KEY:', process.env.VITE_SUPABASE_ANON_KEY?.substring(0, 10) + '...');
+  console.log('[getTestSupabaseClient] SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY?.substring(0, 10) + '...');
+  console.log('[getTestSupabaseClient] ANON_KEY:', process.env.ANON_KEY?.substring(0, 10) + '...');
+  console.log('[getTestSupabaseClient] supabaseUrl:', supabaseUrl);
+  console.log('[getTestSupabaseClient] supabaseKey:', supabaseKey?.substring(0, 10) + '...');
 
   if (!supabaseKey) {
     throw new Error(

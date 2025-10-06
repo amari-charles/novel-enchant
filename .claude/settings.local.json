@@ -74,7 +74,11 @@
       "Bash(gh pr view:*)",
       "Bash(git fetch:*)",
       "Bash(git merge:*)",
-      "Bash(npm run test:run:*)"
+      "Bash(npm run test:run:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(xargs:*)",
+      "Bash(VITE_SUPABASE_URL=\"http://127.0.0.1:54321\" VITE_SUPABASE_ANON_KEY=\"test\" npm run test:integration)"
     ],
     "deny": [],
     "ask": []
