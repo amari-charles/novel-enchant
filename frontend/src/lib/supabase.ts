@@ -168,6 +168,39 @@ export type Database = {
           },
         ]
       }
+      enhancement_characters: {
+        Row: {
+          character_id: string
+          created_at: string
+          enhancement_id: string
+        }
+        Insert: {
+          character_id: string
+          created_at?: string
+          enhancement_id: string
+        }
+        Update: {
+          character_id?: string
+          created_at?: string
+          enhancement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enhancement_characters_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enhancement_characters_enhancement_id_fkey"
+            columns: ["enhancement_id"]
+            isOneToOne: false
+            referencedRelation: "enhancements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enhancements: {
         Row: {
           anchor_id: string
@@ -503,6 +536,7 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 
 import { createClient } from '@supabase/supabase-js';
 

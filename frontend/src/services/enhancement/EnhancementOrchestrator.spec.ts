@@ -8,6 +8,22 @@ import type { ISceneSelector } from './ISceneSelector';
 import type { IPromptBuilder } from './IPromptBuilder';
 import type { IImageStorage } from './IImageStorage';
 
+// Mock Supabase client
+vi.mock('../../lib/supabase', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: vi.fn(() => Promise.resolve({
+            data: { user_id: 'user-123' },
+            error: null
+          }))
+        }))
+      }))
+    }))
+  }
+}));
+
 describe('EnhancementOrchestrator', () => {
   let orchestrator: EnhancementOrchestrator;
   let mockChapterRepository: IChapterRepository;
@@ -108,6 +124,11 @@ describe('EnhancementOrchestrator', () => {
         },
       };
 
+      const mockSceneImageResult = {
+        image: mockGeneratedImage,
+        characterIds: [] as string[],
+      };
+
       const mockMediaId = 'media-123';
       const mockEnhancement = {
         id: 'enhancement-1',
@@ -123,7 +144,7 @@ describe('EnhancementOrchestrator', () => {
       (mockChapterRepository.get as any).mockResolvedValue(mockChapter);
       (mockSceneSelector.selectScenes as any).mockResolvedValue({ scenes: mockScenes });
       (mockAnchorService.createAnchor as any).mockResolvedValue(mockAnchor);
-      (mockPromptBuilder.generateImageFromScene as any).mockResolvedValue(mockGeneratedImage);
+      (mockPromptBuilder.generateImageFromScene as any).mockResolvedValue(mockSceneImageResult);
       (mockImageStorage.uploadImage as any).mockResolvedValue({ mediaId: mockMediaId });
       (mockEnhancementRepository.create as any).mockResolvedValue(mockEnhancement);
       (mockAnchorService.updateActiveEnhancement as any).mockResolvedValue(undefined);

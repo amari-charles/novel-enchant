@@ -67,7 +67,18 @@
       "Bash(timeout 20 npm run test:integration -- storage-bucket --reporter=verbose)",
       "WebFetch(domain:supabase-sql.vercel.app)",
       "WebFetch(domain:github.com)",
-      "Bash(supabase status:*)"
+      "Bash(supabase status:*)",
+      "Bash(MSYS_NO_PATHCONV=1 supabase db reset)",
+      "Bash(MSYS_NO_PATHCONV=1 npx supabase db dump --schema storage --local)",
+      "Bash(MSYS_NO_PATHCONV=1 npx supabase db dump --data-only --schema storage -t buckets --local)",
+      "Bash(gh pr view:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(xargs:*)",
+      "Bash(VITE_SUPABASE_URL=\"http://127.0.0.1:54321\" VITE_SUPABASE_ANON_KEY=\"test\" npm run test:integration)"
     ],
     "deny": [],
     "ask": []

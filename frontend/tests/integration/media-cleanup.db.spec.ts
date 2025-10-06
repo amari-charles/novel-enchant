@@ -14,7 +14,6 @@ import {
   createTestUser,
   cleanupTestUser,
   cleanupStaleTestData,
-  withTestTransaction,
 } from './setup';
 
 describe('Media Cleanup - Database Integration', () => {
