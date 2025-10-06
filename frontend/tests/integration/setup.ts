@@ -11,8 +11,11 @@ import type { Database } from '../../src/lib/supabase';
  * Uses local Supabase instance by default
  */
 export function getTestSupabaseClient(): SupabaseClient<Database> {
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321';
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.ANON_KEY;
+  // Vitest exposes env vars through import.meta.env, not process.env
+  // @ts-expect-error - import.meta.env is available in Vitest
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321';
+  // @ts-expect-error - import.meta.env is available in Vitest
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.ANON_KEY;
 
   if (!supabaseKey) {
     throw new Error(
