@@ -104,37 +104,12 @@ jobs:
       - name: Create test user for integration tests
         run: |
           echo "Creating integration test user..."
-          # Create test user via SQL (only if not exists)
-          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -c "
-          INSERT INTO auth.users (
-            instance_id,
-            id,
-            aud,
-            role,
-            email,
-            encrypted_password,
-            email_confirmed_at,
-            created_at,
-            updated_at,
-            confirmation_token,
-            recovery_token
-          )
-          SELECT
-            '00000000-0000-0000-0000-000000000000',
-            gen_random_uuid(),
-            'authenticated',
-            'authenticated',
-            'integration-test@novelenchant.com',
-            crypt('integration-test-password-123', gen_salt('bf')),
-            NOW(),
-            NOW(),
-            NOW(),
-            '',
-            ''
-          WHERE NOT EXISTS (
-            SELECT 1 FROM auth.users WHERE email = 'integration-test@novelenchant.com'
-          );
-          " || echo "User may already exist"
+          # Create test user using Supabase auth API (proper way)
+          curl -X POST http://127.0.0.1:54321/auth/v1/signup \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0" \
+            -H "Content-Type: application/json" \
+            -d '{"email": "integration-test@novelenchant.com", "password": "integration-test-password-123"}' \
+            || echo "User may already exist"
           echo "✅ Test user setup complete!"
 
       - name: Run integration tests
