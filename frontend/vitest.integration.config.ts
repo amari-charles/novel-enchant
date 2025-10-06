@@ -3,13 +3,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
-import dotenv from 'dotenv';
-
-// Load environment variables from .env file
-dotenv.config();
 
 // Integration test configuration
 // Runs tests against real Supabase database
+// Env vars are passed from shell (local .env or CI workflow), not loaded here
 export default defineConfig({
   plugins: [tailwindcss(), react()],
   resolve: {
