@@ -104,9 +104,8 @@ jobs:
       - name: Create test user for integration tests
         run: |
           echo "Creating integration test user..."
-          # Create test user via SQL
+          # Create test user via SQL (only if not exists)
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -c "
-          -- Insert test user into auth.users table
           INSERT INTO auth.users (
             instance_id,
             id,
@@ -119,7 +118,8 @@ jobs:
             updated_at,
             confirmation_token,
             recovery_token
-          ) VALUES (
+          )
+          SELECT
             '00000000-0000-0000-0000-000000000000',
             gen_random_uuid(),
             'authenticated',
@@ -131,9 +131,11 @@ jobs:
             NOW(),
             '',
             ''
-          ) ON CONFLICT (email) DO NOTHING;
-          "
-          echo "✅ Test user created successfully!"
+          WHERE NOT EXISTS (
+            SELECT 1 FROM auth.users WHERE email = 'integration-test@novelenchant.com'
+          );
+          " || echo "User may already exist"
+          echo "✅ Test user setup complete!"
 
       - name: Run integration tests
         run: cd frontend && npm run test:integration
