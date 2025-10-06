@@ -100,9 +100,6 @@ jobs:
           supabase start
           supabase status -o env >> $GITHUB_ENV
 
-      - name: Run database migrations
-        run: supabase db push
-
       - name: Run integration tests
         run: cd frontend && npm run test:integration
         env:
