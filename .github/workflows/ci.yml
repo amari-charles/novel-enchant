@@ -101,6 +101,40 @@ jobs:
           supabase start
           echo "✅ Supabase is ready!"
 
+      - name: Create test user for integration tests
+        run: |
+          echo "Creating integration test user..."
+          # Create test user via SQL
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -c "
+          -- Insert test user into auth.users table
+          INSERT INTO auth.users (
+            instance_id,
+            id,
+            aud,
+            role,
+            email,
+            encrypted_password,
+            email_confirmed_at,
+            created_at,
+            updated_at,
+            confirmation_token,
+            recovery_token
+          ) VALUES (
+            '00000000-0000-0000-0000-000000000000',
+            gen_random_uuid(),
+            'authenticated',
+            'authenticated',
+            'integration-test@novelenchant.com',
+            crypt('integration-test-password-123', gen_salt('bf')),
+            NOW(),
+            NOW(),
+            NOW(),
+            '',
+            ''
+          ) ON CONFLICT (email) DO NOTHING;
+          "
+          echo "✅ Test user created successfully!"
+
       - name: Run integration tests
         run: cd frontend && npm run test:integration
         env:
