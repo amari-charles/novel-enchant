@@ -28,11 +28,7 @@ export default defineConfig({
     hookTimeout: 30000,
     // Run test files sequentially to avoid shared user conflicts
     fileParallelism: false,
-    // Load environment variables from .env
-    env: {
-      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || '',
-      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || '',
-      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-    },
+    // Don't override env - let tests read directly from process.env
+    // Env vars are set in CI workflow before running tests
   },
 });
