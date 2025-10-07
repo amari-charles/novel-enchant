@@ -17,9 +17,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './tests/setup.ts',
+    setupFiles: './tests/integration/db/setup.ts',
     // Only run integration tests
-    include: ['tests/integration/**/*.spec.ts'],
+    include: ['tests/integration/db/**/*.spec.ts'],
     // Longer timeout for database operations
     testTimeout: 30000,
     hookTimeout: 30000,
