@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Card, CardContent } from '../shared/ui-components'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import type { AIAnalysisResult } from '../services/ai-analysis'
 // import type { CreateStoryForm } from '../shared/type-definitions'
 

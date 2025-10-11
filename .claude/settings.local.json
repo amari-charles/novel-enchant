@@ -78,7 +78,11 @@
       "Bash(gh run view:*)",
       "Bash(gh run list:*)",
       "Bash(xargs:*)",
-      "Bash(VITE_SUPABASE_URL=\"http://127.0.0.1:54321\" VITE_SUPABASE_ANON_KEY=\"test\" npm run test:integration)"
+      "Bash(VITE_SUPABASE_URL=\"http://127.0.0.1:54321\" VITE_SUPABASE_ANON_KEY=\"test\" npm run test:integration)",
+      "Bash(tree:*)",
+      "Bash(npm ci:*)",
+      "Bash(test -d packages)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

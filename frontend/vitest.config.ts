@@ -17,11 +17,14 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './tests/setup.ts',
-    // Exclude integration tests from unit test runs
+    // Only run unit tests
+    include: ['tests/unit/**/*.spec.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+    // Exclude integration and e2e tests from unit test runs
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
       '**/tests/integration/**',
+      '**/tests/e2e/**',
     ],
   },
 });

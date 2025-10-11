@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
-import { Button, Card, CardContent } from '../shared/ui-components'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { fetchContentFromUrl } from '../services/ai-analysis'
 
 interface ContentInputProps {
