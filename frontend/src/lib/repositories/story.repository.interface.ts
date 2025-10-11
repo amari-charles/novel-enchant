@@ -3,7 +3,7 @@
  * Data access layer for story operations
  */
 
-import type { Database } from '../../../lib/supabase';
+import type { Database } from '@/lib/supabase';
 
 // Type aliases from database schema
 export type Story = Database['public']['Tables']['stories']['Row'];

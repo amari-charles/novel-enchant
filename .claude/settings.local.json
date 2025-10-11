@@ -82,7 +82,9 @@
       "Bash(tree:*)",
       "Bash(npm ci:*)",
       "Bash(test -d packages)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(for file in *.ts)",
+      "Bash(do )"
     ],
     "deny": [],
     "ask": []

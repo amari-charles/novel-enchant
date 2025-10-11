@@ -3,8 +3,8 @@
  * Data access layer for anchor operations
  */
 
-import { supabase } from '../../../lib/supabase';
-import type { IAnchorRepository, Anchor, AnchorInsert, AnchorUpdate } from './IAnchorRepository';
+import { supabase } from '@/lib/supabase';
+import type { IAnchorRepository, Anchor, AnchorInsert, AnchorUpdate } from './anchor.repository.interface';
 
 export class AnchorRepository implements IAnchorRepository {
   async get(anchor_id: string): Promise<Anchor | null> {

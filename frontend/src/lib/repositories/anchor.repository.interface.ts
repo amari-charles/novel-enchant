@@ -3,7 +3,7 @@
  * Data access layer for anchor operations
  */
 
-import type { Database } from '../../../lib/supabase';
+import type { Database } from '@/lib/supabase';
 
 // Type aliases from database schema
 export type Anchor = Database['public']['Tables']['anchors']['Row'];

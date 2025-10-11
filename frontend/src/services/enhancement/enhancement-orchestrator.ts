@@ -4,13 +4,13 @@
  */
 
 import { supabase } from '../../lib/supabase';
-import type { IEnhancementService } from './IEnhancementService';
-import type { IChapterRepository } from './repositories/IChapterRepository';
-import type { IAnchorService } from './IAnchorService';
-import type { IEnhancementRepository } from './repositories/IEnhancementRepository';
-import type { ISceneSelector } from './ISceneSelector';
-import type { IPromptBuilder, ImageStyle } from './IPromptBuilder';
-import type { IImageStorage } from './IImageStorage';
+import type { IEnhancementService } from './i-enhancement.service';
+import type { IChapterRepository } from '@/lib/repositories/chapter.repository.interface';
+import type { IAnchorService } from './i-anchor.service';
+import type { IEnhancementRepository } from '@/lib/repositories/enhancement.repository.interface';
+import type { ISceneSelector } from './i-scene-selector';
+import type { IPromptBuilder, ImageStyle } from './i-prompt-builder';
+import type { IImageStorage } from './i-image-storage';
 
 export class EnhancementOrchestrator implements IEnhancementService {
   constructor(

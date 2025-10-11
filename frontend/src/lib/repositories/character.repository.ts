@@ -3,8 +3,8 @@
  * Data access layer for character operations
  */
 
-import { supabase } from '../../../lib/supabase';
-import type { ICharacterRepository, Character, CharacterInsert, CharacterUpdate } from './ICharacterRepository';
+import { supabase } from '@/lib/supabase';
+import type { ICharacterRepository, Character, CharacterInsert, CharacterUpdate } from './character.repository.interface';
 
 export class CharacterRepository implements ICharacterRepository {
   async get(character_id: string): Promise<Character | null> {

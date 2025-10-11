@@ -10,12 +10,12 @@ import { useAuth } from '@/contexts/auth-context';
 import { StoryCard } from './StoryCard';
 import { ChapterListPage } from './ChapterListPage';
 import { ReadingView } from './ReadingView';
-import { StoryRepository } from '@/services/enhancement/repositories/StoryRepository';
-import { ChapterRepository } from '@/services/enhancement/repositories/ChapterRepository';
-import { AnchorRepository } from '@/services/enhancement/repositories/AnchorRepository';
-import { EnhancementRepository } from '@/services/enhancement/repositories/EnhancementRepository';
-import type { Story as DBStory } from '@/services/enhancement/repositories/IStoryRepository';
-import type { Chapter as DBChapter } from '@/services/enhancement/repositories/IChapterRepository';
+import { StoryRepository } from '@/lib/repositories/story.repository';
+import { ChapterRepository } from '@/lib/repositories/chapter.repository';
+import { AnchorRepository } from '@/lib/repositories/anchor.repository';
+import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
+import type { Story as DBStory } from '@/lib/repositories/story.repository.interface';
+import type { Chapter as DBChapter } from '@/lib/repositories/chapter.repository.interface';
 import {
   Select,
   SelectContent,

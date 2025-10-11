@@ -4,8 +4,8 @@
  * Keeps storage bucket and media table in sync
  */
 
-import type { IImageStorage, MediaOwnerType } from './IImageStorage';
-import type { IMediaRepository } from './repositories/IMediaRepository';
+import type { IImageStorage, MediaOwnerType } from './i-image-storage';
+import type { IMediaRepository } from '@/lib/repositories/media.repository.interface';
 import { supabase } from '../../lib/supabase';
 
 /**

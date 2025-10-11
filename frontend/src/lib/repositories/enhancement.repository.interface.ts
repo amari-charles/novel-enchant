@@ -3,7 +3,7 @@
  * Data access layer for enhancement operations
  */
 
-import type { Database } from '../../../lib/supabase';
+import type { Database } from '@/lib/supabase';
 
 // Type aliases from database schema
 export type Enhancement = Database['public']['Tables']['enhancements']['Row'];

@@ -4,9 +4,9 @@
  * Manages character consistency through the CharacterRegistry
  */
 
-import type { IPromptBuilder, ImageStyle, SceneImageResult } from './IPromptBuilder';
-import type { IImageGenerator } from './IImageGenerator';
-import type { ICharacterRegistry, SceneCharacterAnalysis, Character } from './ICharacterRegistry';
+import type { IPromptBuilder, ImageStyle, SceneImageResult } from './i-prompt-builder';
+import type { IImageGenerator } from './i-image-generator';
+import type { ICharacterRegistry, SceneCharacterAnalysis, Character } from './i-character-registry';
 
 export class PromptBuilder implements IPromptBuilder {
   constructor(

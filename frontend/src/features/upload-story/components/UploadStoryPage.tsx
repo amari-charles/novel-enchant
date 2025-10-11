@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
-import { StoryRepository } from '@/services/enhancement/repositories/StoryRepository';
+import { StoryRepository } from '@/lib/repositories/story.repository';
 
 interface UploadStoryPageProps {
   onNavigateToStories?: () => void;

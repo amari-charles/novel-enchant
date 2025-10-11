@@ -3,8 +3,8 @@
  * Data access layer for enhancement operations
  */
 
-import { supabase } from '../../../lib/supabase';
-import type { IEnhancementRepository, Enhancement, EnhancementInsert, EnhancementUpdate } from './IEnhancementRepository';
+import { supabase } from '@/lib/supabase';
+import type { IEnhancementRepository, Enhancement, EnhancementInsert, EnhancementUpdate } from './enhancement.repository.interface';
 
 export class EnhancementRepository implements IEnhancementRepository {
   async get(enhancement_id: string): Promise<Enhancement | null> {

@@ -3,7 +3,7 @@
  * Returns mock image URLs without calling an actual AI API
  */
 
-import type { IImageAIClient } from './IImageAIClient';
+import type { IImageAIClient } from './i-image-ai-client';
 
 export class StubImageAIClient implements IImageAIClient {
   async generateImage(): Promise<string> {

@@ -3,8 +3,8 @@
  * Data access layer for story operations
  */
 
-import { supabase } from '../../../lib/supabase';
-import type { IStoryRepository, Story, StoryInsert, StoryUpdate } from './IStoryRepository';
+import { supabase } from '@/lib/supabase';
+import type { IStoryRepository, Story, StoryInsert, StoryUpdate } from './story.repository.interface';
 
 export class StoryRepository implements IStoryRepository {
   async get(story_id: string): Promise<Story | null> {

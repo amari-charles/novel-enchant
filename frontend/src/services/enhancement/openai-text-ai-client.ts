@@ -3,7 +3,7 @@
  * Uses OpenAI's GPT models for text generation tasks
  */
 
-import type { ITextAIClient } from './ITextAIClient';
+import type { ITextAIClient } from './i-text-ai-client';
 
 export class OpenAITextAIClient implements ITextAIClient {
   private apiKey: string;
