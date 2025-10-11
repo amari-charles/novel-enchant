@@ -6,7 +6,7 @@
 
 import type { IImageStorage, MediaOwnerType } from './i-image-storage';
 import type { IMediaRepository } from '@/lib/repositories/media.repository.interface';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 /**
  * Default bucket name for enhancement images

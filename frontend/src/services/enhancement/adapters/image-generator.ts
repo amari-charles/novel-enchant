@@ -5,7 +5,7 @@
  */
 
 import type { IImageGenerator, GeneratedImage } from './i-image-generator';
-import type { IImageAIClient } from './i-image-ai-client';
+import type { IImageAIClient } from './ai-clients/i-image-ai-client';
 
 export class ImageGenerator implements IImageGenerator {
   constructor(private imageAI: IImageAIClient) {}

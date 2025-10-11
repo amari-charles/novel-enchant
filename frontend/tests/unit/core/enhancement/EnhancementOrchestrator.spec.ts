@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { EnhancementOrchestrator } from '@/services/enhancement/enhancement-orchestrator';
+import { EnhancementOrchestrator } from '@/services/enhancement/services/enhancement-orchestrator';
 import type { IChapterRepository } from '@/lib/repositories/chapter.repository.interface';
-import type { IAnchorService } from '@/services/enhancement/i-anchor.service';
+import type { IAnchorService } from '@/services/enhancement/services/i-anchor.service';
 import type { IEnhancementRepository } from '@/lib/repositories/enhancement.repository.interface';
-import type { ISceneSelector } from '@/services/enhancement/i-scene-selector';
-import type { IPromptBuilder } from '@/services/enhancement/i-prompt-builder';
-import type { IImageStorage } from '@/services/enhancement/i-image-storage';
+import type { ISceneSelector } from '@/services/enhancement/services/i-scene-selector';
+import type { IPromptBuilder } from '@/services/enhancement/services/i-prompt-builder';
+import type { IImageStorage } from '@/services/enhancement/adapters/i-image-storage';
 
 // Mock Supabase client
 vi.mock('@/lib/supabase', () => ({

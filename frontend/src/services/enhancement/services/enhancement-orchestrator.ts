@@ -3,14 +3,14 @@
  * Oversees the entire enhancement flow for chapters and books
  */
 
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import type { IEnhancementService } from './i-enhancement.service';
 import type { IChapterRepository } from '@/lib/repositories/chapter.repository.interface';
 import type { IAnchorService } from './i-anchor.service';
 import type { IEnhancementRepository } from '@/lib/repositories/enhancement.repository.interface';
 import type { ISceneSelector } from './i-scene-selector';
 import type { IPromptBuilder, ImageStyle } from './i-prompt-builder';
-import type { IImageStorage } from './i-image-storage';
+import type { IImageStorage } from '../adapters/i-image-storage';
 
 export class EnhancementOrchestrator implements IEnhancementService {
   constructor(

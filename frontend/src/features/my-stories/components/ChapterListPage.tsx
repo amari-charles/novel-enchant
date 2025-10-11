@@ -13,7 +13,7 @@ import { ChapterRepository } from '@/lib/repositories/chapter.repository';
 import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
 import { AnchorRepository } from '@/lib/repositories/anchor.repository';
 import { MediaRepository } from '@/lib/repositories/media.repository';
-import { createEnhancementOrchestrator } from '@/services/enhancement/create-enhancement-orchestrator';
+import { createEnhancementOrchestrator } from '@/services/enhancement/factory/create-enhancement-orchestrator';
 import type { Story as DBStory } from '@/lib/repositories/story.repository.interface';
 import type { Chapter as DBChapter } from '@/lib/repositories/chapter.repository.interface';
 

@@ -5,7 +5,7 @@
  */
 
 import type { IPromptBuilder, ImageStyle, SceneImageResult } from './i-prompt-builder';
-import type { IImageGenerator } from './i-image-generator';
+import type { IImageGenerator } from '../adapters/i-image-generator';
 import type { ICharacterRegistry, SceneCharacterAnalysis, Character } from './i-character-registry';
 
 export class PromptBuilder implements IPromptBuilder {

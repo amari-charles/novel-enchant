@@ -20,7 +20,7 @@
   - Changed to: `@/lib/repositories/story.repository`
   - All builds and tests passing
 
-### Phase 4: Service Layer File Naming ✅ COMPLETED (Partial)
+### Phase 4: Service Layer File Naming & Layering ✅ COMPLETED
 - [x] **Rename all service files to kebab-case**
   - All 21 files in `services/enhancement/` renamed to kebab-case
   - `EnhancementOrchestrator.ts` → `enhancement-orchestrator.ts`
@@ -30,17 +30,30 @@
   - All internal imports updated
   - All builds and tests passing
 
-- [ ] **Reorganize services/enhancement/ with proper layering** (Future PR)
+- [x] **Reorganize services/enhancement/ with proper layering**
   ```
   services/enhancement/
-  ├── domain/              # Pure business logic
-  ├── services/            # Application services
-  ├── repositories/        # (moved to lib/)
-  ├── adapters/            # External integrations (AI, storage)
+  ├── services/            # Application services (orchestrators, domain logic)
+  ├── adapters/            # External integrations (AI clients, storage)
+  │   └── ai-clients/      # AI provider implementations
   └── factory/             # Dependency injection
   ```
+  - Moved all AI clients to `adapters/ai-clients/`
+  - Moved storage and image generation to `adapters/`
+  - Kept orchestrators and business logic in `services/`
+  - Factory for wiring dependencies in `factory/`
 
-### Phase 5: Architecture Improvements (Future PR)
+### Phase 5: Tooling & Linting ✅ COMPLETED (Partial)
+- [x] **Set up pre-commit hooks**
+  - Installed husky and lint-staged
+  - Auto-run linting on staged files
+  - Prevent commits with linting errors
+
+- [ ] **Add import ordering linting** (Future PR)
+  - Install `eslint-plugin-import` (or alternative for ESLint 9)
+  - Enforce consistent import order (React, external, internal, relative)
+
+### Phase 6: Architecture Improvements (Future PR)
 - [ ] **Create API abstraction layer**
   - Create `shared/api/` directory
   - Move `lib/supabase.ts` to `shared/api/supabase/client.ts`
@@ -52,20 +65,11 @@
   - Currently using manual route state management (~100+ lines)
   - Use `createBrowserRouter` with proper route definitions
 
-- [ ] **Set up pre-commit hooks**
-  - Install husky and lint-staged
-  - Auto-run linting on staged files
-  - Prevent commits with linting errors
-
-- [ ] **Add import ordering linting**
-  - Install `eslint-plugin-import`
-  - Enforce consistent import order (React, external, internal, relative)
-
 - [ ] **Create Architecture Decision Records (ADRs)**
   - Document in `docs/architecture/` directory
   - Record key architectural decisions and rationale
 
-### Phase 6: Documentation Consolidation (Future PR)
+### Phase 7: Documentation Consolidation (Future PR)
 - [ ] **Reorganize specs/ directory**
   - Current: `specs/000-navigation-entry-flow/`, `specs/001-reader-enhance-flow/`, etc.
   - Reorganize into: `specs/features/` and `specs/business/`
