@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
+
 import type { IMediaRepository, Media, MediaInsert, MediaUpdate } from './media.repository.interface';
 
 export class MediaRepository implements IMediaRepository {

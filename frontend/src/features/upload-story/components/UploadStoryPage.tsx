@@ -4,9 +4,10 @@
  */
 
 import React, { useState } from 'react';
+
 import { useAuth } from '@/contexts/auth-context';
-import { supabase } from '@/lib/supabase';
 import { StoryRepository } from '@/lib/repositories/story.repository';
+import { supabase } from '@/lib/supabase';
 
 interface UploadStoryPageProps {
   onNavigateToStories?: () => void;

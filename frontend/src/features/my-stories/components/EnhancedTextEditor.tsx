@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+
 import { LexicalEditor } from './LexicalEditor';
 
 interface Enhancement {

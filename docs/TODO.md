@@ -43,15 +43,17 @@
   - Kept orchestrators and business logic in `services/`
   - Factory for wiring dependencies in `factory/`
 
-### Phase 5: Tooling & Linting ✅ COMPLETED (Partial)
+### Phase 5: Tooling & Linting ✅ COMPLETED
 - [x] **Set up pre-commit hooks**
   - Installed husky and lint-staged
   - Auto-run linting on staged files
   - Prevent commits with linting errors
 
-- [ ] **Add import ordering linting** (Future PR)
-  - Install `eslint-plugin-import` (or alternative for ESLint 9)
-  - Enforce consistent import order (React, external, internal, relative)
+- [x] **Add import ordering linting**
+  - Installed `eslint-plugin-simple-import-sort` (ESLint 9 compatible)
+  - Enforces consistent import order automatically
+  - Sorted all imports across entire codebase
+  - Runs automatically on commit via lint-staged
 
 ### Phase 6: Architecture Improvements (Future PR)
 - [ ] **Create API abstraction layer**

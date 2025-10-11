@@ -6,14 +6,15 @@
  * Run: supabase start && supabase db reset (or connect to remote with proper env vars)
  */
 
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { afterAll,beforeAll, describe, expect, test } from 'vitest';
+
 import type { Database } from '../../src/lib/supabase';
 import {
-  getTestSupabaseClient,
-  createTestUser,
-  cleanupTestUser,
   cleanupStaleTestData,
+  cleanupTestUser,
+  createTestUser,
+  getTestSupabaseClient,
 } from './setup';
 
 describe('Cascade Deletes - Database Integration', () => {

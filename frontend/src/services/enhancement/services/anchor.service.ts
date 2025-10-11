@@ -4,9 +4,10 @@
  * Business logic layer over AnchorRepository
  */
 
-import type { IAnchorService, Anchor } from './i-anchor.service';
 import type { IAnchorRepository } from '@/lib/repositories/anchor.repository.interface';
 import type { IChapterRepository } from '@/lib/repositories/chapter.repository.interface';
+
+import type { Anchor,IAnchorService } from './i-anchor.service';
 
 export class AnchorService implements IAnchorService {
   constructor(

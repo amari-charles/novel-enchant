@@ -4,14 +4,15 @@
  */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import type { ICharacterRepository } from '@/lib/repositories/character.repository.interface';
+
+import type { ITextAIClient } from '../adapters/ai-clients/i-text-ai-client';
 import type {
-  ICharacterRegistry,
   Character,
   CharacterContext,
+  ICharacterRegistry,
   SceneCharacterAnalysis,
 } from './i-character-registry';
-import type { ITextAIClient } from '../adapters/ai-clients/i-text-ai-client';
-import type { ICharacterRepository } from '@/lib/repositories/character.repository.interface';
 
 export class CharacterRegistry implements ICharacterRegistry {
   constructor(

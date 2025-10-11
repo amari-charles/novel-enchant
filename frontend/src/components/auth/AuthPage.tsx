@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { AuthForm } from './AuthForm';
 
 export const AuthPage: React.FC = () => {

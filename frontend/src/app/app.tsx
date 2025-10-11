@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
-import { ThemeProvider } from '../contexts/theme-context'
-import { AuthProvider, useAuth } from '../contexts/auth-context'
-import { ErrorBoundary } from '../components/error-boundary'
+import { useEffect,useState } from 'react'
+
 import { AuthPage } from '../components/auth'
-import { UploadStoryPage } from '../features/upload-story/components/UploadStoryPage'
-import { MyStoriesPage } from '../features/my-stories/components/MyStoriesPage'
-import { ExplorePage } from '../features/explore/components/ExplorePage'
+import { ErrorBoundary } from '../components/error-boundary'
 import { NavBar } from '../components/NavBar'
+import { AuthProvider, useAuth } from '../contexts/auth-context'
+import { ThemeProvider } from '../contexts/theme-context'
+import { ExplorePage } from '../features/explore/components/ExplorePage'
+import { MyStoriesPage } from '../features/my-stories/components/MyStoriesPage'
+import { UploadStoryPage } from '../features/upload-story/components/UploadStoryPage'
 
 // Router for new simplified flow
 type Route =

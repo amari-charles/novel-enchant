@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
+
 import type { IStoryRepository, Story, StoryInsert, StoryUpdate } from './story.repository.interface';
 
 export class StoryRepository implements IStoryRepository {

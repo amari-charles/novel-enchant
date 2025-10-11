@@ -4,18 +4,20 @@
  * Allows adding, editing, deleting, and enhancing chapters
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback,useEffect, useState } from 'react';
+
 import { useAuth } from '@/contexts/auth-context';
-import { ChapterWorkspace } from './ChapterWorkspace';
-import { ChapterCard } from './ChapterCard';
-import { StoryRepository } from '@/lib/repositories/story.repository';
-import { ChapterRepository } from '@/lib/repositories/chapter.repository';
-import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
 import { AnchorRepository } from '@/lib/repositories/anchor.repository';
-import { MediaRepository } from '@/lib/repositories/media.repository';
-import { createEnhancementOrchestrator } from '@/services/enhancement/factory/create-enhancement-orchestrator';
-import type { Story as DBStory } from '@/lib/repositories/story.repository.interface';
+import { ChapterRepository } from '@/lib/repositories/chapter.repository';
 import type { Chapter as DBChapter } from '@/lib/repositories/chapter.repository.interface';
+import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
+import { MediaRepository } from '@/lib/repositories/media.repository';
+import { StoryRepository } from '@/lib/repositories/story.repository';
+import type { Story as DBStory } from '@/lib/repositories/story.repository.interface';
+import { createEnhancementOrchestrator } from '@/services/enhancement/factory/create-enhancement-orchestrator';
+
+import { ChapterCard } from './ChapterCard';
+import { ChapterWorkspace } from './ChapterWorkspace';
 
 interface Story extends DBStory {
   status: 'draft' | 'partial' | 'complete';

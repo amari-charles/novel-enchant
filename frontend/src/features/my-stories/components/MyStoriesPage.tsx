@@ -4,18 +4,10 @@
  * Shows both authored drafts and enhanced stories with status indicators
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
-import { useAuth } from '@/contexts/auth-context';
-import { StoryCard } from './StoryCard';
-import { ChapterListPage } from './ChapterListPage';
-import { ReadingView } from './ReadingView';
-import { StoryRepository } from '@/lib/repositories/story.repository';
-import { ChapterRepository } from '@/lib/repositories/chapter.repository';
-import { AnchorRepository } from '@/lib/repositories/anchor.repository';
-import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
-import type { Story as DBStory } from '@/lib/repositories/story.repository.interface';
-import type { Chapter as DBChapter } from '@/lib/repositories/chapter.repository.interface';
+import { LayoutGrid, List, Plus } from 'lucide-react';
+import React, { useCallback,useEffect, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -24,8 +16,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Button } from '@/components/ui/button';
-import { LayoutGrid, List, Plus } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { AnchorRepository } from '@/lib/repositories/anchor.repository';
+import { ChapterRepository } from '@/lib/repositories/chapter.repository';
+import type { Chapter as DBChapter } from '@/lib/repositories/chapter.repository.interface';
+import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
+import { StoryRepository } from '@/lib/repositories/story.repository';
+import type { Story as DBStory } from '@/lib/repositories/story.repository.interface';
+
+import { supabase } from '../../../lib/supabase';
+import { ChapterListPage } from './ChapterListPage';
+import { ReadingView } from './ReadingView';
+import { StoryCard } from './StoryCard';
 
 // UI types (extends DB types)
 interface StoryStats {

@@ -2,13 +2,14 @@
  * Unit tests for ParagraphTrackingPlugin
  */
 
-import { describe, test, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { $getRoot, $createParagraphNode, $createTextNode } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { ParagraphTrackingPlugin } from '@/features/my-stories/components/ParagraphTrackingPlugin';
+import { render } from '@testing-library/react';
+import { $createParagraphNode, $createTextNode,$getRoot } from 'lexical';
 import { useEffect } from 'react';
+import { describe, expect, test, vi } from 'vitest';
+
+import { ParagraphTrackingPlugin } from '@/features/my-stories/components/ParagraphTrackingPlugin';
 
 describe('ParagraphTrackingPlugin', () => {
   const createEditor = () => ({

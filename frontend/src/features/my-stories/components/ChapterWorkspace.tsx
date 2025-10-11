@@ -3,16 +3,18 @@
  * Combined editor and viewer for chapters with enhancement support
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChapterRepository } from '@/lib/repositories/chapter.repository';
+import React, { useCallback,useEffect, useRef, useState } from 'react';
+
 import { AnchorRepository } from '@/lib/repositories/anchor.repository';
+import type { Anchor } from '@/lib/repositories/anchor.repository.interface';
+import { ChapterRepository } from '@/lib/repositories/chapter.repository';
+import type { Chapter } from '@/lib/repositories/chapter.repository.interface';
 import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
+import type { Enhancement } from '@/lib/repositories/enhancement.repository.interface';
 import { MediaRepository } from '@/lib/repositories/media.repository';
+
 import { EnhancedTextEditor } from './EnhancedTextEditor';
 import { EnhancedTextViewer } from './EnhancedTextViewer';
-import type { Chapter } from '@/lib/repositories/chapter.repository.interface';
-import type { Anchor } from '@/lib/repositories/anchor.repository.interface';
-import type { Enhancement } from '@/lib/repositories/enhancement.repository.interface';
 
 interface ChapterWorkspaceProps {
   chapterId: string;
@@ -187,7 +189,7 @@ export const ChapterWorkspace: React.FC<ChapterWorkspaceProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [handleManualSave]);
 
   // Font preference handler

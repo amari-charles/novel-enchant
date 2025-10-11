@@ -4,14 +4,15 @@
  */
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { $getRoot, $createParagraphNode, $createTextNode, type EditorState } from 'lexical';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { $createParagraphNode, $createTextNode, $getRoot, type EditorState } from 'lexical';
 import { useEffect } from 'react';
+
 import { ImageNode } from './ImageDecoratorNode';
 import { ImageDecoratorPlugin } from './ImageDecoratorPlugin';
 import { ParagraphTrackingPlugin } from './ParagraphTrackingPlugin';

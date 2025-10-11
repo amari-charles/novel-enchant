@@ -3,7 +3,7 @@
  * Display for individual chapters in story editor
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 
 interface Chapter {
   id: string;

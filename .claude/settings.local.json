@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(awk:*)",
-      "Bash(npx husky init:*)"
+      "Bash(npx husky init:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []

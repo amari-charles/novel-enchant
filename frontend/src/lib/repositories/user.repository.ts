@@ -3,8 +3,9 @@
  * Handles user data access operations
  */
 
-import type { IUserRepository, User, UserInsert, UserUpdate } from './user.repository.interface';
 import type { SupabaseClient } from '@/lib/supabase';
+
+import type { IUserRepository, User, UserInsert, UserUpdate } from './user.repository.interface';
 
 export class UserRepository implements IUserRepository {
   constructor(private supabase: SupabaseClient) {}

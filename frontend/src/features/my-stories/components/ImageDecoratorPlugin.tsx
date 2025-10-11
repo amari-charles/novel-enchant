@@ -6,6 +6,7 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $getRoot, $isParagraphNode } from 'lexical';
 import { useEffect } from 'react';
+
 import { $createImageNode, $isImageNode, ImageNode } from './ImageDecoratorNode';
 
 interface Enhancement {

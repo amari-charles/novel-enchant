@@ -3,12 +3,13 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { describe, test, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { render } from '@testing-library/react';
 import { $getRoot } from 'lexical';
 import { useEffect } from 'react';
+import { describe, expect, test, vi } from 'vitest';
+
 import { $createImageNode, $isImageNode, ImageNode } from '@/features/my-stories/components/ImageDecoratorNode';
 
 describe('ImageDecoratorNode', () => {
