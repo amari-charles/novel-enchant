@@ -3,8 +3,8 @@
  * Data access layer for chapter operations
  */
 
-import { supabase } from '../../../lib/supabase';
-import type { IChapterRepository, Chapter, ChapterInsert, ChapterUpdate } from './IChapterRepository';
+import { supabase } from '@/lib/supabase';
+import type { IChapterRepository, Chapter, ChapterInsert, ChapterUpdate } from './chapter.repository.interface';
 
 export class ChapterRepository implements IChapterRepository {
   async get(chapter_id: string): Promise<Chapter | null> {

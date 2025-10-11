@@ -3,7 +3,7 @@
  * Data access layer for character operations
  */
 
-import type { Database } from '../../../lib/supabase';
+import type { Database } from '@/lib/supabase';
 
 // Type aliases from database schema
 export type Character = Database['public']['Tables']['characters']['Row'];

@@ -3,20 +3,20 @@
  * Instantiates all dependencies and returns a ready-to-use orchestrator
  */
 
-import { EnhancementOrchestrator } from './EnhancementOrchestrator';
-import { ChapterRepository } from './repositories/ChapterRepository';
-import { AnchorRepository } from './repositories/AnchorRepository';
-import { EnhancementRepository } from './repositories/EnhancementRepository';
-import { CharacterRepository } from './repositories/CharacterRepository';
-import { AnchorService } from './AnchorService';
-import { SceneSelector } from './SceneSelector';
-import { PromptBuilder } from './PromptBuilder';
-import { ImageGenerator } from './ImageGenerator';
-import { ImageStorage } from './ImageStorage';
-import { CharacterRegistry } from './CharacterRegistry';
-import { StubImageAIClient } from './StubImageAIClient';
-import { OpenAITextAIClient } from './OpenAITextAIClient';
-import { MediaRepository } from './repositories/MediaRepository';
+import { EnhancementOrchestrator } from '../services/enhancement-orchestrator';
+import { ChapterRepository } from '@/lib/repositories/chapter.repository';
+import { AnchorRepository } from '@/lib/repositories/anchor.repository';
+import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
+import { CharacterRepository } from '@/lib/repositories/character.repository';
+import { AnchorService } from '../services/anchor.service';
+import { SceneSelector } from '../services/scene-selector';
+import { PromptBuilder } from '../services/prompt-builder';
+import { ImageGenerator } from '../adapters/image-generator';
+import { ImageStorage } from '../adapters/image-storage';
+import { CharacterRegistry } from '../services/character-registry';
+import { StubImageAIClient } from '../adapters/ai-clients/stub-image-ai-client';
+import { OpenAITextAIClient } from '../adapters/ai-clients/openai-text-ai-client';
+import { MediaRepository } from '@/lib/repositories/media.repository';
 
 /**
  * Creates a fully configured EnhancementOrchestrator instance

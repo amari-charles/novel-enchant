@@ -3,7 +3,7 @@
  * Defines the contract for building prompts from scene context
  */
 
-import type { GeneratedImage } from './IImageGenerator';
+import type { GeneratedImage } from '../adapters/i-image-generator';
 
 /**
  * Style preferences for image generation

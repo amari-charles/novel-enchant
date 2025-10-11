@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { EnhancementOrchestrator } from '@/services/enhancement/EnhancementOrchestrator';
-import type { IChapterRepository } from '@/services/enhancement/repositories/IChapterRepository';
-import type { IAnchorService } from '@/services/enhancement/IAnchorService';
-import type { IEnhancementRepository } from '@/services/enhancement/repositories/IEnhancementRepository';
-import type { ISceneSelector } from '@/services/enhancement/ISceneSelector';
-import type { IPromptBuilder } from '@/services/enhancement/IPromptBuilder';
-import type { IImageStorage } from '@/services/enhancement/IImageStorage';
+import { EnhancementOrchestrator } from '@/services/enhancement/services/enhancement-orchestrator';
+import type { IChapterRepository } from '@/lib/repositories/chapter.repository.interface';
+import type { IAnchorService } from '@/services/enhancement/services/i-anchor.service';
+import type { IEnhancementRepository } from '@/lib/repositories/enhancement.repository.interface';
+import type { ISceneSelector } from '@/services/enhancement/services/i-scene-selector';
+import type { IPromptBuilder } from '@/services/enhancement/services/i-prompt-builder';
+import type { IImageStorage } from '@/services/enhancement/adapters/i-image-storage';
 
 // Mock Supabase client
 vi.mock('@/lib/supabase', () => ({

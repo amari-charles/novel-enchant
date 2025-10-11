@@ -3,7 +3,7 @@
  * Returns mock responses without calling an actual AI API
  */
 
-import type { ITextAIClient } from './ITextAIClient';
+import type { ITextAIClient } from './i-text-ai-client';
 
 export class StubTextAIClient implements ITextAIClient {
   async generateText(): Promise<string> {

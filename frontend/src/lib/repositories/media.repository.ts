@@ -3,8 +3,8 @@
  * Data access layer for media file operations
  */
 
-import { supabase } from '../../../lib/supabase';
-import type { IMediaRepository, Media, MediaInsert, MediaUpdate } from './IMediaRepository';
+import { supabase } from '@/lib/supabase';
+import type { IMediaRepository, Media, MediaInsert, MediaUpdate } from './media.repository.interface';
 
 export class MediaRepository implements IMediaRepository {
   async get(media_id: string): Promise<Media | null> {

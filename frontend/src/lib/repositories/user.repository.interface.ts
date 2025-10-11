@@ -3,7 +3,7 @@
  * Data access layer for user operations
  */
 
-import type { Database } from '../../../lib/supabase';
+import type { Database } from '@/lib/supabase';
 
 // Type aliases from database schema
 export type User = Database['public']['Tables']['users']['Row'];

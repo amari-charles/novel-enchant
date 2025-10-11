@@ -3,7 +3,7 @@
  * Data access layer for chapter operations
  */
 
-import type { Database } from '../../../lib/supabase';
+import type { Database } from '@/lib/supabase';
 
 // Type aliases from database schema
 export type Chapter = Database['public']['Tables']['chapters']['Row'];

@@ -4,15 +4,15 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChapterRepository } from '@/services/enhancement/repositories/ChapterRepository';
-import { AnchorRepository } from '@/services/enhancement/repositories/AnchorRepository';
-import { EnhancementRepository } from '@/services/enhancement/repositories/EnhancementRepository';
-import { MediaRepository } from '@/services/enhancement/repositories/MediaRepository';
+import { ChapterRepository } from '@/lib/repositories/chapter.repository';
+import { AnchorRepository } from '@/lib/repositories/anchor.repository';
+import { EnhancementRepository } from '@/lib/repositories/enhancement.repository';
+import { MediaRepository } from '@/lib/repositories/media.repository';
 import { EnhancedTextEditor } from './EnhancedTextEditor';
 import { EnhancedTextViewer } from './EnhancedTextViewer';
-import type { Chapter } from '@/services/enhancement/repositories/IChapterRepository';
-import type { Anchor } from '@/services/enhancement/repositories/IAnchorRepository';
-import type { Enhancement } from '@/services/enhancement/repositories/IEnhancementRepository';
+import type { Chapter } from '@/lib/repositories/chapter.repository.interface';
+import type { Anchor } from '@/lib/repositories/anchor.repository.interface';
+import type { Enhancement } from '@/lib/repositories/enhancement.repository.interface';
 
 interface ChapterWorkspaceProps {
   chapterId: string;

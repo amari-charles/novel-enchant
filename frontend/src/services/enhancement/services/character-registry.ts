@@ -9,9 +9,9 @@ import type {
   Character,
   CharacterContext,
   SceneCharacterAnalysis,
-} from './ICharacterRegistry';
-import type { ITextAIClient } from './ITextAIClient';
-import type { ICharacterRepository } from './repositories/ICharacterRepository';
+} from './i-character-registry';
+import type { ITextAIClient } from '../adapters/ai-clients/i-text-ai-client';
+import type { ICharacterRepository } from '@/lib/repositories/character.repository.interface';
 
 export class CharacterRegistry implements ICharacterRegistry {
   constructor(

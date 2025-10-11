@@ -7,8 +7,8 @@ import type {
   ISceneSelector,
   SceneSelectionResult,
   SelectedScene,
-} from './ISceneSelector';
-import type { ITextAIClient } from './ITextAIClient';
+} from './i-scene-selector';
+import type { ITextAIClient } from '../adapters/ai-clients/i-text-ai-client';
 
 export class SceneSelector implements ISceneSelector {
   constructor(private textAI: ITextAIClient) {}

@@ -4,8 +4,8 @@
  * Provider-agnostic implementation that can be swapped with different backends
  */
 
-import type { IImageGenerator, GeneratedImage } from './IImageGenerator';
-import type { IImageAIClient } from './IImageAIClient';
+import type { IImageGenerator, GeneratedImage } from './i-image-generator';
+import type { IImageAIClient } from './ai-clients/i-image-ai-client';
 
 export class ImageGenerator implements IImageGenerator {
   constructor(private imageAI: IImageAIClient) {}
