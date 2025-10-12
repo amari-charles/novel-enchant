@@ -10,7 +10,7 @@ import { EnhancementRepository } from '@/lib/repositories/enhancement.repository
 import { MediaRepository } from '@/lib/repositories/media.repository';
 
 import { OpenAITextAIClient } from '../adapters/ai-clients/openai-text-ai-client';
-import { StubImageAIClient } from '../adapters/ai-clients/stub-image-ai-client';
+import { RunPodImageAIClient } from '../adapters/ai-clients/runpod-image-ai-client';
 import { ImageGenerator } from '../adapters/image-generator';
 import { ImageStorage } from '../adapters/image-storage';
 import { AnchorService } from '../services/anchor.service';
@@ -33,7 +33,8 @@ export function createEnhancementOrchestrator(userId: string): EnhancementOrches
   const mediaRepository = new MediaRepository();
 
   // Instantiate AI clients
-  const imageAIClient = new StubImageAIClient(); // TODO: Replace with OpenAIImageAIClient when ready
+  // Use RunPod for production, stub for development without credentials
+  const imageAIClient = new RunPodImageAIClient();
   const textAIClient = new OpenAITextAIClient(); // Using OpenAI for text/scene extraction
 
   // Instantiate core services

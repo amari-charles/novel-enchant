@@ -82,5 +82,32 @@
   - Create `docs/development/` subdirectory
   - Move testing docs to `docs/development/testing.md`
 
+### Phase 8: RunPod SDXL Integration ✅ COMPLETED
+- [x] **Create Supabase Edge Function for secure RunPod API calls**
+  - Created `supabase/functions/generate-image/index.ts`
+  - Handles job submission, polling with backoff, and output parsing
+  - API keys kept server-side for security (not exposed to browser)
+  - Returns base64-encoded images to frontend
+
+- [x] **Implement RunPodImageAIClient**
+  - Created `frontend/src/services/enhancement/adapters/ai-clients/runpod-image-ai-client.ts`
+  - Implements `IImageAIClient` interface
+  - Calls Supabase Edge Function instead of RunPod directly
+  - Converts base64 response to data URLs
+
+- [x] **Update factory to use RunPod client**
+  - Modified `create-enhancement-orchestrator.ts` to use `RunPodImageAIClient`
+  - Replaced `StubImageAIClient` with production-ready implementation
+
+- [x] **Write comprehensive unit tests**
+  - Created `tests/unit/core/enhancement/runpod-image-ai-client.spec.ts`
+  - Tests Edge Function invocation, error handling, and data URL conversion
+  - All tests passing (6/6)
+
+- [x] **Update environment configuration**
+  - Updated `.env.example` with server-side RunPod credentials
+  - Documented that `RUNPOD_API_KEY` and `RUNPOD_ENDPOINT_ID` are NOT prefixed with `VITE_`
+  - Credentials set in Supabase Edge Function secrets
+
 ## Security & Error Handling
 - [ ] **Do not expose internal errors to the user** - Currently showing raw database error messages like "new row violates row-level security policy". Should show user-friendly messages and log technical details server-side.
